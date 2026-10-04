@@ -1,0 +1,2551 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FootZone</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0d0f10">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
+<style>
+:root{
+  --bg:#0d0f10;
+  --bg-card:#17191c;
+  --bg-card-2:#1f2226;
+  --border:#2a2d31;
+  --text:#f2f3f4;
+  --text-dim:#9aa0a6;
+  --text-faint:#6b7075;
+  --accent:#22c55e;
+  --accent-dark:#16a34a;
+  --blue:#3b82f6;
+  --red:#ef4444;
+  --amber:#f59e0b;
+  --gold:#facc15;
+  --silver:#cbd5e1;
+  --bronze:#d97757;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+#app{
+  max-width:480px;
+  margin:0 auto;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  background:var(--bg);
+}
+/* ---------- top brand bar ---------- */
+.brandbar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:14px 16px 10px;
+  flex-shrink:0;
+}
+.brandbar .logo{font-size:20px;}
+.brandbar h1{font-size:19px;font-weight:800;letter-spacing:-0.3px;}
+/* ---------- screens ---------- */
+.screen{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  display:none;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:12px;
+}
+.screen.active{display:block;}
+.section-pad{padding:0 16px;}
+/* ---------- search bar ---------- */
+.searchbar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:11px 14px;
+  color:var(--text-faint);
+  font-size:14.5px;
+}
+/* ---------- filter pills ---------- */
+.pillrow{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:10px 16px;
+  scrollbar-width:none;
+}
+.pillrow::-webkit-scrollbar{display:none;}
+.pill{
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  color:var(--text-dim);
+  padding:8px 14px;
+  border-radius:20px;
+  font-size:13.5px;
+  font-weight:600;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.pill.active{background:var(--text);color:#0d0f10;border-color:var(--text);}
+/* ---------- bottom nav ---------- */
+.navbar{
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+  background:rgba(13,15,16,0.97);
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.navbtn{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+  background:none;
+  border:none;
+  color:var(--text-faint);
+  font-size:10.5px;
+  font-weight:600;
+  padding:4px 8px;
+  cursor:pointer;
+}
+.navbtn .ic{font-size:21px;line-height:1;}
+.navbtn.active{color:var(--accent);}
+/* ---------- fab ---------- */
+.fab{
+  position:absolute;
+  right:16px;
+  bottom:82px;
+  width:52px;height:52px;
+  border-radius:50%;
+  background:var(--accent);
+  color:#08170d;
+  border:none;
+  font-size:24px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 18px rgba(34,197,94,0.35);
+  z-index:40;
+  cursor:pointer;
+}
+/* ---------- generic card ---------- */
+.card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:16px;
+}
+h2.title{font-size:22px;font-weight:800;display:flex;align-items:center;gap:8px;padding:4px 16px 2px;}
+p.subtitle{color:var(--text-dim);font-size:13px;padding:0 16px 10px;}
+/* ---------- tab switcher (segmented) ---------- */
+.segrow{display:flex;gap:8px;padding:0 16px 12px;}
+.seg{
+  flex:1;
+  text-align:center;
+  padding:9px 0;
+  border-radius:12px;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  color:var(--text-dim);
+  font-size:13.5px;
+  font-weight:700;
+  cursor:pointer;
+}
+.seg.active{background:var(--text);color:#0d0f10;border-color:var(--text);}
+/* ---------- avatar ---------- */
+.avatar{
+  width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(135deg,#2b2f34,#1a1c1f);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+  border:2px solid var(--accent);
+}
+.avatar.sm{width:32px;height:32px;font-size:14px;}
+.avatar.lg{width:86px;height:86px;font-size:34px;border-width:3px;}
+/* ---------- modal / bottom sheet ---------- */
+.overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,0.55);
+  z-index:50;
+  display:none;
+}
+.overlay.show{display:block;}
+.sheet{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  max-height:82%;
+  background:var(--bg);
+  border-radius:20px 20px 0 0;
+  border:1px solid var(--border);
+  border-bottom:none;
+  z-index:51;
+  transform:translateY(100%);
+  transition:transform .28s ease;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sheet.show{transform:translateY(0);}
+.sheet-handle{
+  width:38px;height:4px;background:var(--border);
+  border-radius:4px;margin:10px auto 4px;flex-shrink:0;
+}
+.sheet-body{overflow-y:auto;padding-bottom:20px;}
+.modal-center{
+  position:absolute;inset:0;
+  display:none;
+  align-items:flex-end;
+  z-index:60;
+}
+.modal-center.show{display:flex;}
+.toast{
+  position:absolute;
+  bottom:100px;left:50%;
+  transform:translateX(-50%);
+  background:#fff;color:#111;
+  padding:10px 18px;border-radius:30px;
+  font-size:13.5px;font-weight:700;
+  z-index:80;
+  opacity:0;pointer-events:none;
+  transition:opacity .2s ease;
+}
+.toast.show{opacity:1;}
+.zone-glow{filter:drop-shadow(0 0 3px #4ade80) drop-shadow(0 0 9px #22c55e);animation:zoneGlow 2.4s ease-in-out infinite;}
+@keyframes zoneGlow{50%{stroke-opacity:.55;}}
+.guest-panel{display:none;}
+.screen.guest .guest-panel{display:block;}
+.screen.guest > :not(.guest-panel):not(.brandbar){display:none!important;}
+.screen.guest .brandbar button{display:none;}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.media{width:100%;max-height:420px;object-fit:cover;border-radius:12px;margin-top:10px;background:#000;display:block;}
+.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.thumbs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;}
+button{font-family:inherit;}
+.auth-in{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:13px 14px;font-size:15px;width:100%;}
+input,textarea,select{font-family:inherit;background:none;border:none;color:var(--text);outline:none;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ CONNEXION ============ -->
+  <div id="authScreen" style="position:absolute;inset:0;z-index:100;background:var(--bg);display:none;flex-direction:column;justify-content:center;padding:24px;overflow-y:auto;">
+    <div style="text-align:center;font-size:40px;">⚽</div>
+    <div style="text-align:center;font-size:26px;font-weight:900;margin-top:6px;">FootZone</div>
+    <div style="text-align:center;color:var(--text-dim);font-size:13.5px;margin-top:4px;">Le foot amateur de ta ville</div>
+    <div class="segrow" style="padding:22px 0 14px;">
+      <div class="seg active" id="tabLogin">Connexion</div>
+      <div class="seg" id="tabSignup">Inscription</div>
+    </div>
+    <div id="signupFields" style="display:none;flex-direction:column;gap:10px;margin-bottom:10px;">
+      <input id="auPseudo" class="auth-in" placeholder="Prénom ou pseudo (ex : Karim D.)" maxlength="40">
+      <input id="auHandle" class="auth-in" placeholder="Identifiant unique (ex : karimdu69)" maxlength="24" autocapitalize="none">
+      <div style="font-size:13px;color:var(--text-dim);display:flex;flex-direction:column;gap:8px;padding:2px 2px 0;">
+        <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="auAge" value="15"> J'ai 15 ans ou plus</label>
+        <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="auAge" value="moins"> J'ai moins de 15 ans et l'accord d'un parent</label>
+        <label style="display:flex;gap:8px;align-items:flex-start;"><input type="checkbox" id="auCgu" style="margin-top:3px;"> <span>J'accepte les conditions d'utilisation et la <span style="color:var(--accent);text-decoration:underline;cursor:pointer;" onclick="event.preventDefault();openPrivacy()">politique de confidentialité</span></span></label>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <input id="auEmail" class="auth-in" type="email" placeholder="Email" autocapitalize="none">
+      <input id="auPass" class="auth-in" type="password" placeholder="Mot de passe (6 caractères min.)">
+    </div>
+    <button id="auSubmit" class="pill active" style="width:100%;justify-content:center;margin-top:16px;padding:13px;font-size:15px;background:var(--accent);border-color:var(--accent);color:#08170d;">Se connecter</button>
+    <div id="auMsg" style="text-align:center;font-size:13px;color:var(--text-dim);margin-top:14px;min-height:18px;"></div>
+    <button id="auGuest" class="pill" style="width:100%;justify-content:center;margin-top:10px;background:none;">Continuer sans compte →</button>
+  </div>
+
+  <!-- ============ CARTES ============ -->
+  <div class="screen active" id="screen-carte">
+    <div id="map" style="position:absolute;inset:0;bottom:132px;background:#0a0b0c;z-index:0;"></div>
+    <div style="position:absolute;top:0;left:0;right:0;z-index:20;padding:12px 16px 8px;background:linear-gradient(to bottom, rgba(13,15,16,0.95), rgba(13,15,16,0.0));">
+      <div class="searchbar"><span>🔍</span><input id="mapSearch" placeholder="Chercher un terrain…" autocomplete="off" style="flex:1;font-size:14.5px;"></div>
+      <div id="mapSearchResults" style="margin-top:6px;display:flex;flex-direction:column;gap:6px;"></div>
+      <div style="display:flex;gap:8px;overflow-x:auto;margin-top:10px;scrollbar-width:none;">
+        <div class="pill active" data-filter="all">Tous</div>
+        <div class="pill" data-filter="city"><span style="color:var(--blue)">●</span> City Stade</div>
+        <div class="pill" data-filter="five"><span style="color:var(--red)">●</span> Terrain de Five</div>
+        <div class="pill" data-filter="club"><span style="color:var(--accent)">●</span> Club</div>
+        <div class="pill" data-filter="universite"><span style="color:#a855f7">●</span> Université</div>
+      </div>
+    </div>
+    <div style="position:absolute;bottom:140px;left:16px;z-index:20;">
+      <div class="pill" id="mapHint" style="background:rgba(23,25,28,0.92);cursor:pointer;max-width:calc(100vw - 110px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🔍 Cherche une ville, un département ou une région</div>
+    </div>
+    <div id="pinBanner" class="card" style="display:none;position:absolute;top:118px;left:16px;right:16px;z-index:25;padding:12px 14px;align-items:center;gap:10px;background:rgba(23,25,28,0.96);">
+      <span style="flex:1;font-size:13.5px;">📍 Touche la carte à l'endroit exact du terrain</span>
+      <button class="pill" onclick="cancelPin()">Annuler</button>
+    </div>
+    <div style="position:absolute;bottom:140px;right:16px;z-index:20;display:flex;flex-direction:column;gap:8px;">
+      <button class="navbtn card" id="btnLocate" style="width:44px;height:36px;color:var(--text);" title="Me localiser">📍</button>
+      <button class="navbtn card" id="btnPlan" style="width:44px;height:36px;color:var(--text);">Plan</button>
+      <button class="navbtn card" id="btnSat" style="width:44px;height:36px;color:var(--text-dim);">Sat.</button>
+    </div>
+  </div>
+
+  <!-- ============ DEBATS ============ -->
+  <div class="screen" id="screen-debats">
+    <div class="brandbar"><span class="logo">🔥</span><h1>Débats</h1></div>
+    <div class="section-pad"><div class="searchbar"><span>🔍</span><input id="feedSearch" placeholder="Rechercher un joueur, un débat, un terrain…" autocomplete="off" style="flex:1;font-size:14.5px;"></div></div>
+    <div id="trends" style="display:none;align-items:center;gap:8px;padding:12px 16px 0;color:var(--text-dim);font-size:12.5px;font-weight:700;overflow-x:auto;scrollbar-width:none;"></div>
+    <div class="segrow" style="margin-top:10px;">
+      <div class="seg active" data-feed="tout">Tout</div>
+      <div class="seg" data-feed="debats">Débats</div>
+      <div class="seg" data-feed="clips">Clips</div>
+    </div>
+    <div id="feedList" class="section-pad" style="display:flex;flex-direction:column;gap:14px;"></div>
+  </div>
+
+  <!-- ============ ACTU ============ -->
+  <div class="screen" id="screen-actu">
+    <div class="brandbar" style="justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;"><span class="logo">📰</span><h1>Actu foot</h1></div>
+      <span id="actuMaj" style="font-size:11.5px;color:var(--text-faint);"></span>
+    </div>
+    <div class="pillrow" id="actuSources" style="padding-top:0;"></div>
+    <div id="actuList" class="section-pad" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+
+  <!-- ============ CLASSEMENTS ============ -->
+  <div class="screen" id="screen-classements">
+    <div class="brandbar"><span class="logo">🏆</span><h1>Classements</h1></div>
+    <p class="subtitle" style="padding-top:0;margin-top:-6px;">Les meilleurs de la communauté FootZone</p>
+    <div class="segrow">
+      <div class="seg active" data-rank="joueurs">🏅 Joueurs</div>
+      <div class="seg" data-rank="buteurs">⚽ Buteurs</div>
+      <div class="seg" data-rank="clips">🎬 Clips</div>
+    </div>
+    <div class="section-pad">
+      <div class="pillrow" style="padding:0 0 10px;">
+        <div class="pill active" data-scale="national">National</div>
+        <div class="pill" data-scale="region">Région</div>
+        <div class="pill" data-scale="departement">Département</div>
+        <div class="pill" data-scale="ville">Ville</div>
+        <div class="pill" data-scale="terrain">Par terrain</div>
+      </div>
+      <select id="rankZone" style="display:none;width:100%;margin-bottom:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--text);"></select>
+    </div>
+    <div id="podium" class="section-pad"></div>
+    <div id="rankList" class="section-pad" style="display:flex;flex-direction:column;gap:2px;margin-top:6px;"></div>
+  </div>
+
+  <!-- ============ MESSAGERIE ============ -->
+  <div class="screen" id="screen-messages">
+    <div class="guest-panel card" style="margin:20px 16px;padding:22px 18px;text-align:center;">
+      <div style="font-size:34px;">⚽</div>
+      <div style="font-weight:800;font-size:17px;margin-top:6px;">Connecte-toi pour discuter avec les joueurs</div>
+      <div style="font-size:13.5px;color:var(--text-dim);margin-top:6px;">Crée ton compte gratuit en 30 secondes.</div>
+      <button class="pill active" style="width:100%;justify-content:center;margin-top:14px;background:var(--accent);border-color:var(--accent);color:#08170d;" onclick="needAuth()">Créer un compte / Se connecter</button>
+    </div>
+    <div class="brandbar" style="justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;"><span class="logo">✉️</span><h1>Messages</h1></div>
+      <button id="btnNewMsg" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text);width:34px;height:34px;border-radius:50%;font-size:17px;">+</button>
+    </div>
+    <div id="convosList" class="section-pad" style="display:flex;flex-direction:column;gap:2px;"></div>
+  </div>
+
+  <!-- ============ PROFIL ============ -->
+  <div class="screen" id="screen-profil">
+    <div class="guest-panel card" style="margin:20px 16px;padding:22px 18px;text-align:center;">
+      <div style="font-size:34px;">⚽</div>
+      <div style="font-weight:800;font-size:17px;margin-top:6px;">Crée ton profil de joueur</div>
+      <div style="font-size:13.5px;color:var(--text-dim);margin-top:6px;">Crée ton compte gratuit en 30 secondes.</div>
+      <button class="pill active" style="width:100%;justify-content:center;margin-top:14px;background:var(--accent);border-color:var(--accent);color:#08170d;" onclick="needAuth()">Créer un compte / Se connecter</button>
+    </div>
+    <div class="brandbar" style="justify-content:space-between;">
+      <h1>Profil</h1>
+      <button id="btnSettings" style="background:none;border:none;color:var(--text-dim);font-size:20px;">⚙️</button>
+    </div>
+    <div id="pfBanner" style="height:110px;background:linear-gradient(90deg,var(--accent),var(--blue));margin:0 16px;border-radius:14px 14px 0 0;"></div>
+    <div class="section-pad" style="margin-top:-34px;display:flex;justify-content:space-between;align-items:flex-end;">
+      <div id="pfAvatar" class="avatar lg">🙂</div>
+      <button id="btnEditProfile" class="pill" style="margin-bottom:6px;">✏️ Modifier</button>
+    </div>
+    <div class="section-pad" style="margin-top:10px;">
+      <div id="pfPseudo" style="font-size:19px;font-weight:800;">…</div>
+      <div id="pfHandle" style="color:var(--text-faint);font-size:13.5px;"></div>
+      <div id="pfBio" style="margin-top:8px;font-size:14px;color:var(--text-dim);"></div>
+      <div id="pfMeta" style="margin-top:6px;font-size:12.5px;color:var(--text-faint);"></div>
+    </div>
+    <div class="section-pad" style="display:flex;gap:10px;margin-top:16px;">
+      <div class="card" style="flex:1;text-align:center;padding:12px 0;">
+        <div style="font-size:19px;">🏆</div><div id="pfPoints" style="font-weight:800;font-size:16px;margin-top:4px;">0</div><div style="font-size:11px;color:var(--text-faint);">Points</div>
+      </div>
+      <div class="card" style="flex:1;text-align:center;padding:12px 0;">
+        <div style="font-size:19px;">⚽</div><div id="pfButs" style="font-weight:800;font-size:16px;margin-top:4px;">0</div><div style="font-size:11px;color:var(--text-faint);">Buts</div>
+      </div>
+      <div class="card" style="flex:1;text-align:center;padding:12px 0;">
+        <div style="font-size:19px;">🔥</div><div id="pfClips" style="font-weight:800;font-size:16px;margin-top:4px;">0</div><div style="font-size:11px;color:var(--text-faint);">Clips</div>
+      </div>
+    </div>
+    <div class="section-pad" style="margin-top:20px;">
+      <div style="font-weight:800;font-size:13px;color:var(--text-dim);letter-spacing:.3px;">MES CLIPS</div>
+      <div id="myClips" style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- ============ BOTTOM NAV ============ -->
+  <div class="navbar">
+    <button class="navbtn active" data-tab="carte"><span class="ic">🗺️</span>Cartes</button>
+    <button class="navbtn" data-tab="debats"><span class="ic">💬</span>Débats</button>
+    <button class="navbtn" data-tab="actu"><span class="ic">📰</span>Actu</button>
+    <button class="navbtn" data-tab="classements"><span class="ic">🏆</span>Classement</button>
+    <button class="navbtn" data-tab="messages"><span class="ic">✉️</span>Messages</button>
+    <button class="navbtn" data-tab="profil"><span class="ic">👤</span>Profil</button>
+  </div>
+
+  <button class="fab" id="fabBtn">＋</button>
+
+  <!-- ============ OVERLAYS / SHEETS ============ -->
+  <div class="overlay" id="overlay"></div>
+
+  <div class="sheet" id="sheetTerrain"></div>
+  <div class="sheet" id="sheetComments"></div>
+  <div class="sheet" id="sheetCompose"></div>
+  <div class="sheet" id="sheetShare"></div>
+  <div class="sheet" id="sheetNewMsg"></div>
+  <div class="sheet" id="sheetConvo"></div>
+  <div class="sheet" id="sheetSettings"></div>
+
+  <div class="toast" id="toast"></div>
+  <div id="momentAd" style="display:none;position:absolute;left:12px;right:12px;bottom:84px;z-index:70;box-shadow:0 10px 30px rgba(0,0,0,.6);border-radius:16px;"></div>
+  <div id="consentBar" class="card" style="display:none;position:absolute;left:12px;right:12px;bottom:84px;z-index:65;padding:14px;background:rgba(23,25,28,.98);box-shadow:0 10px 30px rgba(0,0,0,.6);">
+    <div style="font-size:13px;line-height:1.45;color:var(--text-dim);">📊 FootZone peut mesurer son audience <b style="color:var(--text);">de façon anonyme</b> (sans compte ni identifiant) pour améliorer l'appli et produire des statistiques de fréquentation des terrains. <span style="color:var(--accent);cursor:pointer;" onclick="openPrivacy()">En savoir plus</span></div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button class="pill" style="flex:1;justify-content:center;" onclick="setConsent(false)">Refuser</button>
+      <button class="pill active" style="flex:1;justify-content:center;background:var(--accent);border-color:var(--accent);color:#08170d;" onclick="setConsent(true)">Accepter</button>
+    </div>
+  </div>
+  <input type="file" id="filePicker" style="display:none">
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script>
+/* =========================================================
+   FOOTZONE — version connectée à Supabase
+   ========================================================= */
+const SUPABASE_URL = 'https://arzakgnjjtyocslnqpbs.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFyemFrZ25qanR5b2NzbG5xcGJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExMTg3ODYsImV4cCI6MjEwNjY5NDc4Nn0.G4J00PpXg2Sm1HG67fvRXU8snHSegDwiteqX75xZeqg';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const state = {
+  me:null, profile:null,
+  tab:'carte', mapFilter:'all', feed:'tout', rankTab:'joueurs', rankScale:'national',
+  terrains:[], posts:[], myLikes:new Set(), myReposts:new Set(),
+  convos:[], currentTerrain:null, currentPost:null, currentConvo:null,
+  terrainChannel:null, msgChannel:null, authMode:'login',
+};
+
+/* ---------------- helpers ---------------- */
+const $=(q,r=document)=>r.querySelector(q);
+const $all=(q,r=document)=>[...r.querySelectorAll(q)];
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
+function fail(err,ctx){console.error(ctx,err);toast('Erreur'+(ctx?' ('+ctx+')':'')+' : '+(err?.message||err));}
+function ago(d){
+  const s=Math.floor((Date.now()-new Date(d))/1000);
+  if(s<60)return "à l'instant"; if(s<3600)return 'il y a '+Math.floor(s/60)+' min';
+  if(s<86400)return 'il y a '+Math.floor(s/3600)+' h'; return 'il y a '+Math.floor(s/86400)+' j';
+}
+function hhmm(d){return new Date(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+function openSheet(id,html){const sh=$('#'+id);sh.innerHTML=html;$('#overlay').classList.add('show');sh.classList.add('show');}
+function closeSheets(){
+  $all('.sheet').forEach(s=>s.classList.remove('show'));$('#overlay').classList.remove('show');
+  if(state.terrainChannel){sb.removeChannel(state.terrainChannel);state.terrainChannel=null;}
+  state.currentConvo=null;
+  try{if(tempPin){map.removeLayer(tempPin);tempPin=null;}}catch(e){}
+}
+$('#overlay').addEventListener('click',closeSheets);
+const closeBtn=`<button onclick="closeSheets()" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);width:30px;height:30px;border-radius:50%;">✕</button>`;
+const greenBtn='background:var(--accent);border-color:var(--accent);color:#08170d;';
+const inputStyle='background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;width:100%;';
+
+/* ---------------- médias (photos / vidéos) ---------------- */
+function avatarHtml(url,cls='sm',style=''){return `<div class="avatar ${cls}" style="${style}">${url?`<img src="${esc(url)}" alt="" loading="lazy">`:'🙂'}</div>`;}
+function pickFile(accept){return new Promise(res=>{const inp=$('#filePicker');inp.value='';inp.accept=accept;inp.onchange=()=>res(inp.files[0]||null);inp.click();});}
+async function compressImage(file,max=1600,q=0.82){
+  if(!file.type.startsWith('image/')||file.type==='image/gif')return file;
+  try{
+    const bmp=await createImageBitmap(file);
+    const r=Math.min(1,max/Math.max(bmp.width,bmp.height));
+    const c=document.createElement('canvas');c.width=Math.round(bmp.width*r);c.height=Math.round(bmp.height*r);
+    c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+    const blob=await new Promise(res=>c.toBlob(res,'image/jpeg',q));
+    return blob?new File([blob],'photo.jpg',{type:'image/jpeg'}):file;
+  }catch(e){return file;}
+}
+async function uploadMedia(file,folder){
+  const isVideo=file.type.startsWith('video/');
+  if(isVideo&&file.size>50*1024*1024)throw new Error('Vidéo trop lourde (50 Mo max)');
+  const f=isVideo?file:await compressImage(file);
+  const ext=isVideo?((file.name.split('.').pop()||'mp4').toLowerCase()):'jpg';
+  const path=`${uid()}/${folder}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const {error}=await sb.storage.from('media').upload(path,f,{contentType:f.type||file.type,upsert:false});
+  if(error)throw error;
+  return sb.storage.from('media').getPublicUrl(path).data.publicUrl;
+}
+function mediaHtml(p){
+  if(p.video_url)return `<video class="media" src="${esc(p.video_url)}" controls playsinline preload="metadata"></video>`;
+  if(p.image_url)return `<img class="media" src="${esc(p.image_url)}" alt="" loading="lazy" onclick="window.open(this.src,'_blank')">`;
+  return '';
+}
+
+/* =========================================================
+   CONFIDENTIALITÉ, STATISTIQUES ANONYMES, PARTENAIRES
+   ========================================================= */
+const CONTACT_EMAIL='foot.contact.zone@gmail.com';   // ← mets ici l'adresse de contact de FootZone (obligatoire pour le RGPD)
+const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
+function statsAllowed(){
+  if(lsGet('fz_consent')!=='oui')return false;
+  if(state.profile&&state.profile.age_15plus===false)return false;   // moins de 15 ans : jamais de mesure
+  return true;
+}
+// Événement anonyme : ni compte, ni identifiant, seulement le lieu, le jour et l'heure
+function track(evt,extra={}){
+  if(!statsAllowed())return;
+  const d=new Date();
+  sb.from('stats_events').insert({evt,heure:d.getHours(),jour_semaine:d.getDay(),...extra}).then(()=>{},()=>{});
+}
+function zoneOf(){const z=state.zone,p=state.profile||{};
+  if(z)return {ville:z.kind==='ville'?z.nom:null,departement:z.kind==='ville'?z.dep:(z.kind==='departement'?z.code:null),region:z.kind==='region'?z.code:(z.reg||null)};
+  return {ville:p.ville||null,departement:p.departement||null,region:p.region||null};
+}
+function showConsentBar(){
+  if(lsGet('fz_consent'))return;
+  $('#consentBar').style.display='block';
+}
+function setConsent(v){
+  lsSet('fz_consent',v?'oui':'non'); $('#consentBar').style.display='none';
+  if(uid())sb.from('profiles').update({consent_stats:!!v}).eq('id',uid()).then(()=>{},()=>{});
+  toast(v?'Merci ! Mesure anonyme activée ✅':'Mesure d\'audience désactivée');
+}
+function openPrivacy(){
+  const on=lsGet('fz_consent')==='oui';
+  openSheet('sheetSettings',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:800;font-size:16px;">Confidentialité et données</div>${closeBtn}</div>
+    <div class="sheet-body section-pad" style="font-size:13.5px;line-height:1.5;color:var(--text-dim);display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+      <div class="card" style="padding:12px;"><b style="color:var(--text);">Ce que FootZone enregistre</b><br>Ton email, ton profil (pseudo, ville, poste, photos) et ce que tu publies. Ta position sert seulement à centrer la carte : elle n'est jamais enregistrée.</div>
+      <div class="card" style="padding:12px;"><b style="color:var(--text);">Mesure d'audience anonyme</b><br>Si tu l'acceptes, l'appli compte les ouvertures de terrains et de zones avec seulement le lieu, le jour et l'heure, sans ton compte ni aucun identifiant. Désactivée pour les moins de 15 ans.
+        <button class="pill ${on?'active':''}" style="width:100%;justify-content:center;margin-top:10px;${on?greenBtn:''}" onclick="setConsent(${!on});openPrivacy()">${on?'✅ Activée — désactiver':'Activer la mesure anonyme'}</button></div>
+      <div class="card" style="padding:12px;"><b style="color:var(--text);">Statistiques et partenaires</b><br>FootZone peut vendre des statistiques de fréquentation (par exemple « terrains les plus fréquentés le samedi à Lyon ») à des villes, des clubs ou des marques. Ce sont uniquement des chiffres regroupant au moins 10 personnes : aucune donnée personnelle n'est jamais vendue. Les annonces sont choisies selon la zone, sans suivi de ta navigation.</div>
+      <div class="card" style="padding:12px;"><b style="color:var(--text);">Tes droits</b><br>Tu peux consulter, corriger ou supprimer tes données à tout moment.${CONTACT_EMAIL?` Contact : <a style="color:var(--accent);" href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>.`:''}
+        ${uid()?`<button class="pill" style="width:100%;justify-content:center;margin-top:10px;color:var(--red);" onclick="deleteAccount()">Supprimer mon compte et mes données</button>`:''}</div>
+      <div style="font-size:11.5px;color:var(--text-faint);">Données des terrains : © contributeurs OpenStreetMap (ODbL), ministère des Sports (Licence Ouverte 2.0), API Géo de l'État. Photos libres : Wikimedia Commons.</div>
+    </div>`);
+}
+async function deleteAccount(){
+  if(!confirm('Supprimer définitivement ton compte, tes posts, tes photos et tes messages ?'))return;
+  const {error}=await sb.rpc('supprimer_mon_compte');
+  if(error)return fail(error,'suppression du compte');
+  closeSheets(); await sb.auth.signOut(); toast('Compte supprimé');
+}
+
+/* ---------- Annonces partenaires : natives, par zone, jamais envahissantes ---------- */
+state.annonces=[]; state.adsSeen=new Set();
+async function loadAnnonces(){
+  const {data}=await sb.from('annonces').select('*');
+  state.annonces=data||[];
+}
+function pickAd(emp){
+  const z=zoneOf();
+  const ok=state.annonces.filter(a=>a.emplacement===emp&&(a.zone_type==='france'
+    ||(a.zone_type==='region'&&a.zone_val===z.region)||(a.zone_type==='departement'&&a.zone_val===z.departement)
+    ||(a.zone_type==='ville'&&z.ville&&norm(a.zone_val)===norm(z.ville))));
+  // les annonces locales passent avant les nationales
+  const local=ok.filter(a=>a.zone_type!=='france');
+  const pool=local.length?local:ok;
+  return pool.length?pool[Math.floor(Math.random()*pool.length)]:null;
+}
+function adHtml(a){
+  return `<div class="card" style="padding:12px;border-color:rgba(250,204,21,.35);">
+    <div style="font-size:10.5px;font-weight:800;color:var(--gold);letter-spacing:.5px;">PARTENAIRE · ${esc(a.partenaire)}</div>
+    ${a.image&&/^https:/.test(a.image)?`<img src="${esc(a.image)}" alt="" loading="lazy" style="width:100%;max-height:160px;object-fit:cover;border-radius:10px;margin-top:8px;">`:''}
+    <div style="font-weight:700;font-size:14.5px;margin-top:6px;">${esc(a.titre)}</div>
+    ${a.texte?`<div style="font-size:13px;color:var(--text-dim);margin-top:3px;">${esc(a.texte)}</div>`:''}
+    ${a.lien?`<button class="pill" style="margin-top:8px;font-size:12.5px;" onclick="adClick(${a.id})">Voir l'offre ↗</button>`:''}
+  </div>`;
+}
+function adSeen(a){if(state.adsSeen.has(a.id))return;state.adsSeen.add(a.id);track('pub_vue',{ref:String(a.id),...zoneOf()});}
+function adClick(id){const a=state.annonces.find(x=>x.id===id);if(!a)return;track('pub_clic',{ref:String(id),...zoneOf()});window.open(a.lien,'_blank','noopener');}
+function injectAds(sel,emp,every){
+  const box=$(sel); if(!box||!state.annonces.length)return;
+  const kids=[...box.children].filter(c=>!c.dataset.ad);
+  for(let i=every-1;i<kids.length;i+=every){
+    const a=pickAd(emp); if(!a)return;
+    const d=document.createElement('div'); d.dataset.ad='1'; d.innerHTML=adHtml(a);
+    kids[i].after(d); adSeen(a);
+  }
+}
+// Encart aux moments clés : au plus un par jour, fermable, jamais pendant une saisie
+function momentAd(emp){
+  const today=new Date().toISOString().slice(0,10);
+  if(lsGet('fz_ad_day')===today)return;
+  const a=pickAd(emp); if(!a)return;
+  lsSet('fz_ad_day',today);
+  const el=$('#momentAd');
+  el.innerHTML=`<div style="position:relative;">${adHtml(a)}<button onclick="$('#momentAd').style.display='none'" style="position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:none;background:rgba(0,0,0,.6);color:#fff;">✕</button></div>`;
+  el.style.display='block'; adSeen(a);
+  clearTimeout(window._maT); window._maT=setTimeout(()=>{el.style.display='none';},15000);
+}
+
+/* ---------- Signalement des contenus ---------- */
+function signaler(type,id){
+  if(!needAuth())return;
+  const motifs=['Haine ou harcèlement','Contenu violent ou choquant','Contenu sexuel','Arnaque ou spam','Atteinte à mes droits (photo, vidéo)','Autre'];
+  window._sig={type,id,motifs};
+  openSheet('sheetShare',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:800;font-size:16px;">Signaler ce contenu</div>${closeBtn}</div>
+    <div class="section-pad sheet-body" style="margin-top:8px;">${motifs.map((m,i)=>`<div class="card" style="padding:13px 14px;margin-bottom:8px;cursor:pointer;" onclick="doSignaler(${i})">${m}</div>`).join('')}</div>`);
+}
+async function doSignaler(i){
+  const s=window._sig;
+  const {error}=await sb.from('signalements').insert({user_id:uid(),cible_type:s.type,cible_id:String(s.id),motif:s.motifs[i]});
+  if(error)return fail(error,'signalement');
+  closeSheets(); toast('Merci, le contenu va être vérifié 🙏');
+}
+
+/* =========================================================
+   STATUT EN DIRECT D'UN TERRAIN
+   ========================================================= */
+async function loadStatut(t){
+  const box=$('#statutBox'); if(!box)return;
+  const {data}=await sb.from('terrain_statuts').select('statut,manque,created_at').eq('terrain_id',t.id)
+    .gte('created_at',new Date(Date.now()-3*3600e3).toISOString()).order('created_at',{ascending:false}).limit(1);
+  if(!$('#statutBox'))return;
+  const s=data?.[0];
+  const lab=s?({libre:'🟢 Libre',occupe:'🔴 Occupé',manque:`🟠 Il manque ${s.manque||'des'} joueur${(s.manque||2)>1?'s':''}`}[s.statut]+` <span style="color:var(--text-faint);font-weight:500;">· ${ago(s.created_at)}</span>`)
+    :'⚪ Pas d\'info récente <span style="color:var(--text-faint);font-weight:500;">· tu es sur place ?</span>';
+  $('#statutBox').innerHTML=`<div class="card" style="padding:12px;margin:0 16px 10px;">
+    <div style="font-size:11px;color:var(--text-faint);font-weight:700;">EN CE MOMENT</div>
+    <div style="font-weight:700;font-size:14.5px;margin-top:4px;">${lab}</div>
+    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+      <button class="pill" style="font-size:12px;" onclick="setStatut('libre')">🟢 Libre</button>
+      <button class="pill" style="font-size:12px;" onclick="setStatut('occupe')">🔴 Occupé</button>
+      <button class="pill" style="font-size:12px;" onclick="setStatut('manque')">🟠 Il manque des joueurs</button>
+    </div></div>`;
+}
+async function setStatut(st){
+  if(!needAuth())return;
+  let manque=null;
+  if(st==='manque'){const n=parseInt(prompt('Combien de joueurs manquent ?','2'),10);if(!n||n<1)return;manque=Math.min(n,20);}
+  const t=state.terrains.find(x=>x.id===state.currentTerrain); if(!t)return;
+  const {error}=await sb.from('terrain_statuts').insert({terrain_id:t.id,user_id:uid(),statut:st,manque});
+  if(error)return fail(error,'statut');
+  track('statut',{terrain_id:t.id,ville:t.ville,departement:t.departement,region:t.region,ref:st});
+  toast('Merci pour l\'info ⚽'); loadStatut(t);
+}
+
+/* =========================================================
+   MATCHS OUVERTS
+   ========================================================= */
+const JOURS=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'], MOIS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+function quand(d){const x=new Date(d);return `${JOURS.at(x.getDay())} ${x.getDate()} ${MOIS.at(x.getMonth())} · ${String(x.getHours()).padStart(2,'0')}h${String(x.getMinutes()).padStart(2,'0')}`;}
+async function fetchMatchs(terrainIds,onlyFuture){
+  let q=sb.from('matchs').select('*,match_joueurs(user_id,equipe,buts,confirme,profiles(pseudo,avatar_url))')
+    .in('terrain_id',terrainIds).neq('statut','annule');
+  q=onlyFuture?q.gte('debut',new Date().toISOString()).eq('statut','ouvert'):q.gte('debut',new Date(Date.now()-7*864e5).toISOString());
+  const {data,error}=await q.order('debut').limit(50);
+  if(error)throw error; return data||[];
+}
+function matchCard(m,showTerrain){
+  const js=m.match_joueurs||[], me=js.find(j=>j.user_id===uid()), mine=m.created_by===uid();
+  const passe=new Date(m.debut)<new Date(), full=js.length>=m.places;
+  const t=showTerrain?state.terrainStore.get(m.terrain_id):null;
+  let actions='';
+  if(m.statut==='ouvert'&&!passe){
+    actions=me?`<button class="pill" style="font-size:12px;" onclick="quitterMatch('${m.id}')">Quitter</button>`
+      :(full?'<span class="pill" style="font-size:12px;opacity:.6;">Complet</span>':`<button class="pill active" style="font-size:12px;${greenBtn}" onclick="rejoindreMatch('${m.id}')">Rejoindre</button>`);
+    if(mine)actions+=`<button class="pill" style="font-size:12px;" onclick="annulerMatch('${m.id}')">Annuler</button>`;
+  }else if(m.statut==='ouvert'&&passe&&mine){
+    actions=`<button class="pill active" style="font-size:12px;${greenBtn}" onclick="openResultat('${m.id}')">Saisir le résultat</button>`;
+  }else if(m.statut==='joue'){
+    actions=me&&!me.confirme?`<button class="pill active" style="font-size:12px;${greenBtn}" onclick="confirmerMatch('${m.id}')">Confirmer le résultat</button>`:'';
+  }
+  return `<div class="card" style="padding:12px;">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">
+      <div style="font-weight:700;font-size:14px;">${quand(m.debut)}</div>
+      ${m.statut==='joue'?`<span class="pill" style="font-size:12px;background:var(--bg-card-2);">A ${m.score_a} – ${m.score_b} B</span>`:`<span class="pill" style="font-size:12px;${full?'':'color:var(--accent);'}">${js.length}/${m.places}</span>`}
+    </div>
+    ${t?`<div style="font-size:12.5px;color:var(--accent);margin-top:2px;cursor:pointer;" onclick="goTerrain('${t.id}')">📍 ${esc(t.nom)}</div>`:''}
+    <div style="font-size:12.5px;color:var(--text-dim);margin-top:4px;">${esc(m.niveau||'Tous niveaux')}${m.description?' · '+esc(m.description):''}</div>
+    <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;">${js.map(j=>avatarHtml(j.profiles?.avatar_url,'sm','width:26px;height:26px;font-size:11px;border-width:1.5px;')).join('')}</div>
+    ${m.statut==='joue'?`<div style="font-size:11.5px;color:var(--text-faint);margin-top:6px;">${m.points_ok?'✅ Résultat validé, points attribués':`⏳ En attente de confirmation par un autre joueur (${js.filter(j=>j.confirme).length} confirmé)`}</div>`:''}
+    ${actions?`<div style="display:flex;gap:6px;margin-top:10px;">${actions}</div>`:''}
+  </div>`;
+}
+async function renderMatchs(t,body){
+  if(t.type==='club'){body.innerHTML='<div class="section-pad" style="font-size:13.5px;color:var(--text-dim);">Les terrains de club sont réservés à leurs licenciés : on ne peut pas y organiser de match via FootZone.</div>';return;}
+  try{
+    const ms=await fetchMatchs([t.id],false);
+    body.innerHTML=`<div class="section-pad" style="display:flex;flex-direction:column;gap:10px;">
+      <button class="pill active" style="width:100%;justify-content:center;${greenBtn}" onclick="openCreateMatch()">⚽ Créer un match ici</button>
+      ${ms.map(m=>matchCard(m,false)).join('')||'<div style="color:var(--text-faint);font-size:13.5px;text-align:center;padding:10px 0;">Aucun match prévu. Lance le premier et trouve les joueurs qui manquent !</div>'}
+      <div style="font-size:11.5px;color:var(--text-faint);">Après le match, le créateur saisit le score et les buts, puis un autre joueur confirme : chacun gagne 10 points, +5 en cas de victoire, +2 par but.</div>
+    </div>`;
+  }catch(e){body.innerHTML='<div class="section-pad" style="color:var(--amber);font-size:13px;">Lance la migration 07 dans Supabase pour activer les matchs.</div>';}
+}
+function openCreateMatch(){
+  const tc=state.terrains.find(x=>x.id===state.currentTerrain);
+  if(tc&&tc.type==='club')return toast('Pas de match possible sur un terrain de club');
+  if(!needAuth('Crée un compte pour organiser un match'))return;
+  const d=new Date(Date.now()+3600e3); d.setMinutes(0,0,0);
+  const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  openSheet('sheetCompose',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:800;font-size:16px;">Nouveau match</div>${closeBtn}</div>
+    <div class="sheet-body section-pad" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+      <label style="font-size:12.5px;color:var(--text-dim);">Date et heure<input id="mDebut" type="datetime-local" value="${local}" style="${inputStyle}margin-top:4px;color:var(--text);"></label>
+      <label style="font-size:12.5px;color:var(--text-dim);">Nombre de joueurs au total
+        <select id="mPlaces" style="${inputStyle}margin-top:4px;color:var(--text);">${[4,6,8,10,12,14,16,18,22].map(n=>`<option ${n===10?'selected':''}>${n}</option>`).join('')}</select></label>
+      <select id="mNiveau" style="${inputStyle}color:var(--text);">${['Tous niveaux','Débutant','Intermédiaire','Confirmé'].map(n=>`<option>${n}</option>`).join('')}</select>
+      <input id="mDesc" maxlength="300" placeholder="Infos (ex : on a un ballon, chasubles bienvenues)" style="${inputStyle}">
+      <button id="mBtn" class="pill active" style="width:100%;justify-content:center;${greenBtn}" onclick="createMatch()">Créer le match</button>
+    </div>`);
+}
+async function createMatch(){
+  if(!needAuth())return;
+  const t=state.terrains.find(x=>x.id===state.currentTerrain);
+  const v=$('#mDebut').value; if(!v)return toast('Choisis une date');
+  const debut=new Date(v); if(debut<new Date(Date.now()-600e3))return toast('Choisis une date à venir');
+  const btn=$('#mBtn'); btn.disabled=true;
+  const {data:m,error}=await sb.from('matchs').insert({terrain_id:t.id,created_by:uid(),debut:debut.toISOString(),
+    places:+$('#mPlaces').value,niveau:$('#mNiveau').value,description:$('#mDesc').value.trim()||null}).select().single();
+  if(error){btn.disabled=false;return fail(error,'match');}
+  await sb.from('match_joueurs').insert({match_id:m.id,user_id:uid()});
+  track('match_cree',{terrain_id:t.id,ville:t.ville,departement:t.departement,region:t.region});
+  closeSheets(); toast('Match créé ✅ Partage-le pour compléter l\'équipe');
+  openTerrain(t.id); setTimeout(()=>renderTerrainSheet('matchs'),50);
+  setTimeout(()=>momentAd('apres_match'),900);
+}
+async function rejoindreMatch(id){
+  if(!needAuth('Crée un compte pour rejoindre ce match'))return;
+  const {error}=await sb.from('match_joueurs').insert({match_id:id,user_id:uid()});
+  if(error)return toast(/complet/i.test(error.message)?'Ce match est complet':'Erreur : '+error.message);
+  const t=state.terrains.find(x=>x.id===state.currentTerrain);
+  if(t)track('match_rejoint',{terrain_id:t.id,ville:t.ville,departement:t.departement,region:t.region});
+  toast('Tu es dans le match ⚽'); refreshMatchViews();
+}
+async function quitterMatch(id){
+  if(!confirm('Quitter ce match ?'))return;
+  const {error}=await sb.from('match_joueurs').delete().match({match_id:id,user_id:uid()});
+  if(error)return fail(error,'match'); refreshMatchViews();
+}
+async function annulerMatch(id){
+  if(!confirm('Annuler ce match pour tout le monde ?'))return;
+  const {error}=await sb.from('matchs').update({statut:'annule'}).eq('id',id);
+  if(error)return fail(error,'match'); refreshMatchViews();
+}
+function refreshMatchViews(){
+  if($('#zoneMatchs')&&state.zoneRows)loadZoneMatchs(state.zoneRows);
+  else if(state.currentTerrain)renderTerrainSheet('matchs');
+}
+async function openResultat(id){
+  const {data:m}=await sb.from('matchs').select('*,match_joueurs(user_id,profiles(pseudo))').eq('id',id).single();
+  if(!m)return;
+  window._resM=m;
+  openSheet('sheetCompose',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:800;font-size:16px;">Résultat du match</div>${closeBtn}</div>
+    <div class="sheet-body section-pad" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:center;font-weight:800;">
+        Équipe A <input id="rA" type="number" min="0" max="99" value="0" style="width:64px;${inputStyle}text-align:center;"> –
+        <input id="rB" type="number" min="0" max="99" value="0" style="width:64px;${inputStyle}text-align:center;"> Équipe B</div>
+      ${m.match_joueurs.map((j,i)=>`<div class="card" style="padding:10px 12px;display:flex;align-items:center;gap:8px;">
+        <div style="flex:1;font-weight:700;font-size:13.5px;">${esc(j.profiles?.pseudo)}</div>
+        <select id="rE${i}" style="background:var(--bg-card-2);border:1px solid var(--border);border-radius:8px;padding:6px;color:var(--text);"><option value="A">A</option><option value="B" ${i%2?'selected':''}>B</option></select>
+        <input id="rG${i}" type="number" min="0" max="50" value="0" style="width:56px;background:var(--bg-card-2);border:1px solid var(--border);border-radius:8px;padding:6px;text-align:center;"> ⚽
+      </div>`).join('')}
+      <button class="pill active" style="width:100%;justify-content:center;${greenBtn}" onclick="saveResultat()">Valider le résultat</button>
+      <div style="font-size:11.5px;color:var(--text-faint);">Les points seront attribués dès qu'un autre joueur du match aura confirmé.</div>
+    </div>`);
+}
+async function saveResultat(){
+  const m=window._resM;
+  const joueurs=m.match_joueurs.map((j,i)=>({user_id:j.user_id,equipe:$('#rE'+i).value,buts:+$('#rG'+i).value||0}));
+  const {error}=await sb.rpc('valider_match',{m:m.id,sa:+$('#rA').value||0,sb:+$('#rB').value||0,joueurs});
+  if(error)return fail(error,'résultat');
+  closeSheets(); toast('Résultat enregistré ✅'); refreshMatchViews();
+}
+async function confirmerMatch(id){
+  const {error}=await sb.rpc('confirmer_match',{m:id});
+  if(error)return fail(error,'confirmation');
+  toast('Merci ! Résultat confirmé ✅'); refreshMatchViews(); loadProfile();
+}
+// Matchs à venir dans la zone ouverte (ville / département / région)
+async function loadZoneMatchs(rows){
+  let box=$('#zoneMatchs');
+  if(!box){const anchor=$('#zoneOsmCount');if(!anchor)return;box=document.createElement('div');box.id='zoneMatchs';anchor.after(box);}
+  const ids=rows.map(t=>t.id).slice(0,300);
+  if(!ids.length){box.innerHTML='';return;}
+  try{
+    const ms=await fetchMatchs(ids,true);
+    if(!$('#zoneMatchs'))return;
+    box.innerHTML=ms.length?`<div style="font-weight:800;font-size:12.5px;color:var(--text-dim);margin:14px 0 8px;">⚽ MATCHS À VENIR (${ms.length})</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">${ms.slice(0,10).map(m=>matchCard(m,true)).join('')}</div>`:'';
+  }catch(e){box.innerHTML='';}
+}
+
+/* ---------- Application installable sur le téléphone ---------- */
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+/* =========================================================
+   AUTHENTIFICATION
+   ========================================================= */
+function setAuthMode(m){
+  state.authMode=m;
+  $('#tabLogin').classList.toggle('active',m==='login');
+  $('#tabSignup').classList.toggle('active',m==='signup');
+  $('#signupFields').style.display=m==='signup'?'flex':'none';
+  $('#auSubmit').textContent=m==='signup'?'Créer mon compte':'Se connecter';
+  $('#auMsg').textContent='';
+}
+$('#tabLogin').onclick=()=>setAuthMode('login');
+$('#tabSignup').onclick=()=>setAuthMode('signup');
+$('#auSubmit').onclick=async()=>{
+  const email=$('#auEmail').value.trim(), password=$('#auPass').value, msg=$('#auMsg');
+  if(!email||password.length<6){msg.textContent='Email et mot de passe (6 caractères min.) requis.';return;}
+  $('#auSubmit').disabled=true; msg.textContent='…';
+  try{
+    if(state.authMode==='signup'){
+      const pseudo=$('#auPseudo').value.trim();
+      const handle=$('#auHandle').value.trim().toLowerCase().replace(/^@/,'');
+      if(!pseudo||!/^[a-z0-9_]{3,24}$/.test(handle)){msg.textContent='Pseudo requis, identifiant : 3-24 caractères (lettres, chiffres, _).';return;}
+      const {data:taken}=await sb.from('profiles').select('id').eq('handle',handle).maybeSingle();
+      if(taken){msg.textContent='Cet identifiant est déjà pris.';return;}
+      const age=document.querySelector('input[name="auAge"]:checked')?.value;
+      if(!age){msg.textContent='Indique ton âge pour continuer.';return;}
+      if(!$('#auCgu').checked){msg.textContent='Accepte les conditions d\'utilisation pour continuer.';return;}
+      lsSet('fz_pending_profile',JSON.stringify({age_15plus:age==='15',cgu_ok_at:new Date().toISOString(),consent_stats:age==='15'&&lsGet('fz_consent')==='oui'}));
+      const {data,error}=await sb.auth.signUp({email,password,options:{data:{pseudo,handle}}});
+      if(error)throw error;
+      if(!data.session){setAuthMode('login');$('#auMsg').textContent='Compte créé ✅ Confirme ton email (lien reçu par mail), puis connecte-toi.';}
+    }else{
+      const {error}=await sb.auth.signInWithPassword({email,password});
+      if(error)throw error;
+    }
+  }catch(e){msg.textContent=e.message==='Invalid login credentials'?'Email ou mot de passe incorrect.':(e.message==='Email not confirmed'?'Email pas encore confirmé : clique sur le lien reçu par mail.':e.message);}
+  finally{$('#auSubmit').disabled=false;}
+};
+
+/* ---------- Mode visiteur : on lit sans compte, on se connecte pour participer ---------- */
+state.depts=[];
+function uid(){return state.me?.id||null;}
+function needAuth(msg){
+  if(state.me)return true;
+  closeSheets();
+  setAuthMode('signup');
+  $('#auMsg').textContent=msg||'Crée un compte gratuit (ou connecte-toi) pour participer ⚽';
+  $('#authScreen').style.display='flex';
+  return false;
+}
+$('#auGuest').onclick=()=>{$('#authScreen').style.display='none';};
+let bootedFor='init';
+sb.auth.onAuthStateChange((event,session)=>{
+  state.me=session?.user||null;
+  const id=state.me?.id||null;
+  if(id!==bootedFor){bootedFor=id;setTimeout(bootApp,0);}
+});
+
+async function bootApp(){
+  $('#authScreen').style.display='none';
+  const guest=!state.me;
+  $('#screen-profil').classList.toggle('guest',guest);
+  $('#screen-messages').classList.toggle('guest',guest);
+  if(state.msgChannel){sb.removeChannel(state.msgChannel);state.msgChannel=null;}
+  state.profile=null; state.convos=[];
+  if(!state.depts.length){const {data}=await sb.from('departements').select('*').order('code');state.depts=data||[];}
+  if(!guest)await loadProfile();
+  if(!guest&&state.profile&&!state.profile.cgu_ok_at){
+    const pend=lsGet('fz_pending_profile');
+    if(pend){try{await sb.from('profiles').update(JSON.parse(pend)).eq('id',uid());await loadProfile();}catch(e){}}
+  }
+  loadAnnonces().catch(()=>{}); showConsentBar();
+  await fillRankZone();
+  await Promise.all([loadTerrains(),loadFeed(),renderRanking(),guest?null:loadConvos()]);
+  if(!guest)subscribeMessages();
+  if(!state.located){state.located=true;locateUser(false);}
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+$all('.navbtn[data-tab]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    state.tab=btn.dataset.tab;
+    $all('.navbtn[data-tab]').forEach(b=>b.classList.toggle('active',b===btn));
+    $all('.screen').forEach(s=>s.classList.remove('active'));
+    $('#screen-'+btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab==='carte'&&map)setTimeout(()=>map.invalidateSize(),80);
+    if(btn.dataset.tab==='debats')loadFeed();
+    if(btn.dataset.tab==='actu')loadActu();
+    if(btn.dataset.tab==='classements')renderRanking();
+    if(btn.dataset.tab==='messages')loadConvos();
+    if(btn.dataset.tab==='profil')loadProfile();
+  });
+});
+$('#fabBtn').addEventListener('click',()=>{
+  if(state.tab==='messages')openNewMsg(); else if(state.tab==='carte')startPin(); else openCompose();
+});
+
+/* =========================================================
+   CARTE
+   ========================================================= */
+let map=null,markers=[];
+function initMap(){
+  try{
+    map=L.map('map',{zoomControl:false,attributionControl:true}).setView([45.748,4.880],11);
+    map.attributionControl.setPrefix(false);
+    map.attributionControl.addAttribution('Terrains : Data ES (ministère des Sports), © OpenStreetMap');
+    const esri='https://server.arcgisonline.com/ArcGIS/rest/services/';
+    // Plan : fond gris foncé Esri + noms de rues/lieux (même serveur que le satellite, qui fonctionne chez toi)
+    const plan=L.layerGroup([
+      L.tileLayer(esri+'Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:16,attribution:'Fond © Esri, HERE, Garmin, OpenStreetMap'}),
+      L.tileLayer(esri+'Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:16})
+    ]);
+    // Satellite : imagerie + noms de lieux par-dessus
+    const sat=L.layerGroup([
+      L.tileLayer(esri+'World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagerie © Esri'}),
+      L.tileLayer(esri+'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19})
+    ]);
+    plan.addTo(map); window._planLayer=plan; window._satLayer=sat;
+    map.on('click',onMapClick);
+    map.on('moveend',()=>{clearTimeout(window._osmT);window._osmT=setTimeout(()=>{loadTerrains();loadOsmPitches();},600);});
+  }catch(e){console.warn('Leaflet indisponible',e);}
+}
+function markerIcon(color){
+  return L.divIcon({className:'',html:`<div style="width:26px;height:26px;border-radius:50% 50% 50% 0;background:${color};transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.5);border:2px solid #fff2;"><span style="transform:rotate(45deg);font-size:12px;">⚽</span></div>`,iconSize:[26,26],iconAnchor:[13,26]});
+}
+const TYPE_COLORS={city:'#3b82f6',five:'#ef4444',club:'#22c55e',universite:'#a855f7'};
+const TYPE_LABELS={city:'CITY STADE',five:'TERRAIN DE FIVE',club:'CLUB',universite:'TERRAIN UNIVERSITAIRE'};
+const TYPE_SHORT={city:'City Stade',five:'Five',club:'Club',universite:'Université'};
+state.terrainStore=new Map();
+let clusterLayer=null;
+// Charge les terrains de la zone affichée (la base peut contenir toute la France)
+async function loadTerrains(){
+  if(!map)return;
+  const b=map.getBounds().pad(0.25);
+  const {data,error}=await sb.from('terrains_stats').select('*')
+    .gte('lat',b.getSouth()).lte('lat',b.getNorth()).gte('lng',b.getWest()).lte('lng',b.getEast()).limit(3000);
+  if(error)return fail(error,'terrains');
+  data.forEach(t=>state.terrainStore.set(t.id,t));
+  state.terrains=[...state.terrainStore.values()];
+  renderMarkers(); renderOsm();
+}
+async function refreshTerrain(id){
+  const {data}=await sb.from('terrains_stats').select('*').eq('id',id).maybeSingle();
+  if(data){state.terrainStore.set(id,data);state.terrains=[...state.terrainStore.values()];renderMarkers();}
+  return data;
+}
+function renderMarkers(){
+  if(!map)return;
+  if(!clusterLayer){
+    clusterLayer=L.markerClusterGroup
+      ?L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:45,disableClusteringAtZoom:16,
+        iconCreateFunction:c=>L.divIcon({className:'',iconSize:[36,36],
+          html:`<div style="width:36px;height:36px;border-radius:50%;background:rgba(34,197,94,.92);color:#08170d;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5);">${c.getChildCount()}</div>`})})
+      :L.layerGroup();
+    clusterLayer.addTo(map);
+  }
+  clusterLayer.clearLayers();
+  const mks=state.terrains.filter(t=>state.mapFilter==='all'||t.type===state.mapFilter).map(t=>{
+    const m=L.marker([t.lat,t.lng],{icon:markerIcon(TYPE_COLORS[t.type]||'#9aa0a6')});
+    m.on('click',()=>openTerrain(t.id)); return m;
+  });
+  if(clusterLayer.addLayers)clusterLayer.addLayers(mks); else mks.forEach(m=>clusterLayer.addLayer(m));
+}
+$all('#screen-carte .pill[data-filter]').forEach(p=>p.addEventListener('click',()=>{
+  state.mapFilter=p.dataset.filter;
+  $all('#screen-carte .pill[data-filter]').forEach(x=>x.classList.toggle('active',x===p));
+  renderMarkers(); renderOsm();
+}));
+/* ---------- Recherche : terrains, villes, départements, régions (outre-mer compris) ---------- */
+function regionsList(){const m=new Map();state.depts.forEach(d=>m.set(d.region_code,d.region_nom));return [...m].map(([code,nom])=>({code,nom}));}
+function depName(c){return state.depts.find(d=>d.code===c)?.nom||c||'';}
+function regName(c){return state.depts.find(d=>d.region_code===c)?.region_nom||c||'';}
+const norm=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+let searchSeq=0;
+$('#mapSearch').addEventListener('input',e=>{clearTimeout(window._sT);const q=e.target.value.trim();window._sT=setTimeout(()=>runSearch(q),300);});
+async function runSearch(q){
+  const box=$('#mapSearchResults'), seq=++searchSeq;
+  if(q.length<2){box.innerHTML='';return;}
+  const nq=norm(q), clean=q.replace(/[%,()]/g,'');
+  const [ter,com]=await Promise.all([
+    sb.from('terrains_stats').select('id,nom,ville,departement').ilike('nom',`%${clean}%`).limit(4),
+    fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(q)}&fields=nom,code,codeDepartement,codeRegion,centre&boost=population&limit=4`).then(r=>r.json()).catch(()=>[])
+  ]);
+  if(seq!==searchSeq)return;
+  const deps=state.depts.filter(d=>norm(d.nom).includes(nq)||d.code.toLowerCase()===nq).slice(0,4);
+  const regs=regionsList().filter(r=>norm(r.nom).includes(nq)).slice(0,3);
+  const R=window._sr={ter:ter.data||[],com:Array.isArray(com)?com:[],deps,regs};
+  const row=(ic,title,sub,click)=>`<div class="card" style="padding:10px 14px;cursor:pointer;background:rgba(23,25,28,0.97);display:flex;gap:10px;align-items:center;" onclick="${click}"><span>${ic}</span><div style="min-width:0;"><div style="font-weight:700;font-size:14px;">${esc(title)}</div><div style="font-size:12px;color:var(--text-faint);">${esc(sub)}</div></div></div>`;
+  box.innerHTML=[
+    ...R.com.map((c,i)=>row('🏙️',c.nom,`Ville · ${depName(c.codeDepartement)} (${c.codeDepartement})`,`pickSearch('com',${i})`)),
+    ...R.ter.map((t,i)=>row('🏟️',t.nom,[t.ville,t.departement&&depName(t.departement)].filter(Boolean).join(' · ')||'Terrain FootZone',`pickSearch('ter',${i})`)),
+    ...R.deps.map((d,i)=>row('🗺️',d.nom,`Département ${d.code} · ${d.region_nom}`,`pickSearch('dep',${i})`)),
+    ...R.regs.map((r,i)=>row('🌍',r.nom,'Région',`pickSearch('reg',${i})`)),
+  ].join('')||'<div class="card" style="padding:10px 14px;font-size:13px;color:var(--text-faint);background:rgba(23,25,28,0.97);">Aucun résultat</div>';
+}
+function clearSearch(){$('#mapSearch').value='';$('#mapSearchResults').innerHTML='';$('#mapSearch').blur();}
+function pickSearch(kind,i){
+  const R=window._sr; clearSearch();
+  if(kind==='ter')return goTerrain(R.ter[i].id);
+  if(kind==='com'){const c=R.com[i];return openZone({kind:'ville',nom:c.nom,code:c.code,dep:c.codeDepartement,reg:c.codeRegion,centre:c.centre?.coordinates});}
+  if(kind==='dep')return openZoneDep(R.deps[i].code);
+  const r=R.regs[i]; return openZone({kind:'region',nom:r.nom,code:r.code});
+}
+function openZoneDep(code){const d=state.depts.find(x=>x.code===code);if(d)openZone({kind:'departement',nom:d.nom,code:d.code,reg:d.region_code});}
+async function goTerrain(id){
+  let t=state.terrainStore.get(id); if(!t)t=await refreshTerrain(id); if(!t)return;
+  clearSearch(); map.flyTo([t.lat,t.lng],16); openTerrain(id);
+}
+
+/* ---------- Fiche d'une zone ---------- */
+function zoneFilter(z,q){
+  if(z.kind==='ville')return q.eq('ville',z.nom).eq('departement',z.dep);
+  if(z.kind==='departement')return q.eq('departement',z.code);
+  return q.eq('region',z.code);
+}
+async function flyToZone(z,rows){
+  if(rows.length){map.flyToBounds(L.latLngBounds(rows.map(t=>[t.lat,t.lng])).pad(0.1),{maxZoom:14});return;}
+  if(z.kind==='ville'&&z.centre){map.flyTo([z.centre[1],z.centre[0]],13);return;}
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=fr&q=${encodeURIComponent(z.nom)}`);
+    const res=await r.json(), hit=res.find(x=>x.type==='administrative')||res[0];
+    if(hit){const bb=hit.boundingbox.map(Number);map.flyToBounds([[bb[0],bb[2]],[bb[1],bb[3]]]);}
+  }catch(e){}
+}
+async function openZone(z,opts={}){
+  track('zone_vue',{ville:z.kind==='ville'?z.nom:null,departement:z.kind==='ville'?z.dep:(z.kind==='departement'?z.code:null),region:z.kind==='region'?z.code:(z.reg||null)});
+  setTimeout(()=>{if(state.zone===z&&opts.sheet===false)momentAd('zone');},4000);
+  const showSheet=opts.sheet!==false;
+  state.zone=z; state.zoneOsm=null; state.zoneMissing=null; state.zoneOsmError=null; state.zoneProgress=null;
+  const geomP=zoneGeometry(z);
+  const {data,error}=await zoneFilter(z,sb.from('terrains_stats').select('*')).order('nom').limit(3000);
+  if(error)return fail(error,'zone');
+  if(state.zone!==z)return;
+  data.forEach(t=>state.terrainStore.set(t.id,t)); state.terrains=[...state.terrainStore.values()];
+  state.zoneRows=data; renderMarkers();
+  if(showSheet)renderZone(data);
+  updateHint();
+  const bounds=drawZone(await geomP);
+  if(state.zone!==z)return;
+  if(bounds&&bounds.isValid())map.flyToBounds(bounds,{padding:[18,18],maxZoom:15});
+  else flyToZone(z,data);
+  try{await loadZoneOsm(z);}catch(e){state.zoneOsmError=e.message;const el=$('#zoneOsmCount');if(el)el.innerHTML=osmCountText();}
+}
+function openZoneReg(code){const r=regionsList().find(x=>x.code===code);if(r)openZone({kind:'region',nom:r.nom,code:r.code});}
+function renderZone(rows){setTimeout(()=>loadZoneMatchs(rows),0);
+  const z=state.zone;
+  const sub={ville:`Ville · ${depName(z.dep)} (${z.dep})`,departement:`Département ${z.code} · ${regName(z.reg)}`,region:'Région'}[z.kind];
+  const counts={}; rows.forEach(t=>counts[t.type]=(counts[t.type]||0)+1);
+  const regNom=regName(z.reg||z.code);
+  const levels=z.kind==='ville'
+    ?`<span class="pill" style="font-size:12px;" onclick="openZoneDep('${z.dep}')">🗺️ Département ${esc(z.dep)}</span><span class="pill" style="font-size:12px;" onclick="openZoneReg('${z.reg}')">🌍 ${esc(regNom)}</span>`
+    :z.kind==='departement'?`<span class="pill" style="font-size:12px;" onclick="openZoneReg('${z.reg}')">🌍 ${esc(regNom)}</span>`:'';
+  const importBox=z.kind==='region'
+    ?`<div style="font-size:12.5px;color:var(--text-faint);margin:12px 0 6px;">Pour trouver tous les terrains, choisis un département :</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">${state.depts.filter(d=>d.region_code===z.code).map(d=>`<span class="pill" style="font-size:12px;padding:6px 10px;" onclick="openZoneDep('${d.code}')">${d.code} · ${esc(d.nom)}</span>`).join('')}</div>`
+    :`<div id="osmZoneBox" class="card" style="padding:12px;margin-top:12px;">
+        <div style="font-size:13px;color:var(--text-dim);">Ajoute d'un coup à FootZone tous les terrains gris ${z.kind==='ville'?'de cette ville':'de ce département'}.</div>
+        <button class="pill active" style="width:100%;justify-content:center;margin-top:10px;${greenBtn}" onclick="scanZoneOsm()">➕ Préparer l'ajout des terrains</button>
+      </div>`;
+  openSheet('sheetTerrain',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+      <div><div style="font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.5px;">${{ville:'VILLE',departement:'DÉPARTEMENT',region:'RÉGION'}[z.kind]}</div>
+        <div style="font-size:20px;font-weight:800;margin-top:2px;">${esc(z.nom)}</div>
+        <div style="font-size:12.5px;color:var(--text-faint);margin-top:2px;">${esc(sub)}</div></div>${closeBtn}
+    </div>
+    <div class="sheet-body section-pad" style="margin-top:10px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="pill active">${rows.length} terrain${rows.length>1?'s':''}</span>
+        ${Object.entries(counts).map(([k,n])=>`<span class="pill" style="font-size:12px;"><span style="color:${TYPE_COLORS[k]}">●</span> ${n} ${TYPE_SHORT[k]||k}</span>`).join('')}
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">${levels}<span class="pill" style="font-size:12px;" onclick="clearZone();closeSheets()">✕ Retirer le contour</span></div>
+      <div id="zoneOsmCount" style="font-size:13px;color:var(--text-dim);margin-top:10px;line-height:1.45;">${osmCountText()}</div>
+      ${importBox}
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px;">
+        ${rows.slice(0,300).map(t=>`<div class="card" style="padding:10px 12px;cursor:pointer;display:flex;gap:10px;align-items:center;" onclick="goTerrain('${t.id}')">
+          <span style="color:${TYPE_COLORS[t.type]};font-size:16px;">●</span>
+          <div style="min-width:0;flex:1;"><div style="font-weight:700;font-size:13.5px;">${esc(t.nom)}</div><div style="font-size:12px;color:var(--text-faint);">${esc([t.ville,t.adresse].filter(Boolean).join(' · '))}</div></div>
+          ${t.nb_avis?`<span style="font-size:12px;color:var(--gold);">★ ${t.note_moyenne}</span>`:''}
+        </div>`).join('')||'<div style="color:var(--text-faint);font-size:13.5px;text-align:center;padding:10px 0;">Aucun terrain FootZone ici pour l\'instant.</div>'}
+        ${rows.length>300?`<div style="font-size:12px;color:var(--text-faint);text-align:center;">… et ${rows.length-300} autres, visibles sur la carte</div>`:''}
+      </div>
+    </div>`);
+}
+
+async function importZoneOsm(){
+  if(!needAuth('Crée un compte pour ajouter des terrains à FootZone'))return;
+  const rows=(state.zoneOsm||[]).map(f=>({...f,created_by:uid()})), box=$('#osmZoneBox');
+  try{
+    for(let i=0;i<rows.length;i+=200){
+      const {error}=await sb.from('terrains').upsert(rows.slice(i,i+200),{onConflict:'osm_id',ignoreDuplicates:true});
+      if(error)throw error;
+      box.innerHTML=`<div style="font-size:13px;">⏳ Ajout… ${Math.min(i+200,rows.length)}/${rows.length}</div>`;
+    }
+    toast(`${rows.length} terrains ajoutés ✅`); await openZone(state.zone);
+  }catch(e){fail(e,'import');}
+}
+
+/* ---------- Ajouter un terrain (épingle) ---------- */
+let pinMode=false, tempPin=null;
+function startPin(){if(!needAuth())return;
+  pinMode=true; $('#pinBanner').style.display='flex';
+  if(map.getZoom()<15) toast('Astuce : zoome bien pour placer l\'épingle pile sur le terrain');
+}
+function cancelPin(){
+  pinMode=false; $('#pinBanner').style.display='none';
+  if(tempPin){map.removeLayer(tempPin);tempPin=null;}
+}
+function onMapClick(e){
+  if(!pinMode)return;
+  pinMode=false; $('#pinBanner').style.display='none';
+  if(tempPin)map.removeLayer(tempPin);
+  tempPin=L.marker(e.latlng,{icon:markerIcon('#facc15')}).addTo(map);
+  openCreateTerrain({lat:e.latlng.lat,lng:e.latlng.lng});
+}
+async function reverseAddress(lat,lng){
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=fr`);
+    const a=(await r.json()).address||{};
+    const rue=[a.house_number,a.road||a.pedestrian||a.footway].filter(Boolean).join(' ');
+    return [rue,[a.postcode,a.city||a.town||a.village||a.municipality].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+  }catch(e){return '';}
+}
+async function openCreateTerrain(pre){if(!needAuth())return;
+  const opt=(arr,val)=>arr.map(x=>`<option ${x===val?'selected':''}>${x}</option>`).join('');
+  openSheet('sheetTerrain',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-weight:800;font-size:16px;">${pre.id?'Modifier le terrain':(pre.osm_id?'Ajouter ce terrain à FootZone':'Nouveau terrain')}</div>${closeBtn}
+    </div>
+    <div class="sheet-body section-pad" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+      <input id="ntNom" maxlength="80" placeholder="Nom du terrain (ex : City Stade Parc Blandan)" value="${esc(pre.nom||'')}" style="${inputStyle}">
+      <select id="ntType" style="${inputStyle}color:var(--text);">
+        <option value="city" ${pre.type==='city'?'selected':''}>🔵 City Stade</option>
+        <option value="five" ${pre.type==='five'?'selected':''}>🔴 Terrain de Five</option>
+        <option value="club" ${pre.type==='club'?'selected':''}>🟢 Club</option>
+        <option value="universite" ${pre.type==='universite'?'selected':''}>🟣 Terrain universitaire</option>
+      </select>
+      <input id="ntAdresse" maxlength="150" placeholder="Adresse (recherche…)" value="${esc(pre.adresse||'')}" style="${inputStyle}">
+      <select id="ntEclairage" style="${inputStyle}color:var(--text);">${opt(['Éclairé','Non éclairé','Je ne sais pas'],pre.eclairage||'Je ne sais pas')}</select>
+      <select id="ntRevetement" style="${inputStyle}color:var(--text);">${opt(['Gazon synthétique','Pelouse naturelle','Béton / bitume','Stabilisé','Je ne sais pas'],pre.revetement||'Je ne sais pas')}</select>
+      <select id="ntAcces" style="${inputStyle}color:var(--text);">${opt(['Accès libre','Réservation','Adhésion club','Je ne sais pas'],pre.acces||'Je ne sais pas')}</select>
+      <div style="font-size:12px;color:var(--text-faint);">📍 ${pre.lat.toFixed(5)}, ${pre.lng.toFixed(5)}</div>
+      <button class="pill active" style="width:100%;justify-content:center;${greenBtn}" onclick='saveTerrain(${JSON.stringify({id:pre.id||null,lat:pre.lat,lng:pre.lng,osm_id:pre.osm_id||null})})'>${pre.id?'Enregistrer':'Ajouter le terrain'}</button>
+    </div>`);
+  if(!pre.adresse&&!pre.id){const a=await reverseAddress(pre.lat,pre.lng);const el=$('#ntAdresse');if(el&&!el.value)el.value=a;}
+}
+async function geoCommune(lat,lng){
+  try{
+    const r=await fetch(`https://geo.api.gouv.fr/communes?lat=${lat}&lon=${lng}&fields=nom,codeDepartement,codeRegion&format=json`);
+    const c=(await r.json())[0];
+    return c?{ville:c.nom,departement:c.codeDepartement,region:c.codeRegion}:{};
+  }catch(e){return {};}
+}
+async function saveTerrain(pos){
+  if(!needAuth())return;
+  const nom=$('#ntNom').value.trim(); if(!nom)return toast('Donne un nom au terrain');
+  const unk=v=>v==='Je ne sais pas'?null:v;
+  const row={nom,type:$('#ntType').value,adresse:$('#ntAdresse').value.trim()||null,
+    eclairage:unk($('#ntEclairage').value),revetement:unk($('#ntRevetement').value),acces:unk($('#ntAcces').value)};
+  let res;
+  if(pos.id){
+    res=await sb.from('terrains').update(row).eq('id',pos.id).select().single();
+  }else{
+    Object.assign(row,{lat:pos.lat,lng:pos.lng,osm_id:pos.osm_id,created_by:uid()},await geoCommune(pos.lat,pos.lng));
+    res=await sb.from('terrains').insert(row).select().single();
+  }
+  if(res.error)return fail(res.error,res.error.code==='23505'?'terrain déjà ajouté':'terrain');
+  cancelPin(); closeSheets(); toast(pos.id?'Terrain modifié ✅':'Terrain ajouté ✅');
+  await refreshTerrain(res.data.id); openTerrain(res.data.id);
+}
+
+/* ---------- Terrains recensés sur OpenStreetMap (points gris) ---------- */
+const PITCH='nwr["leisure"="pitch"]["sport"~"soccer|futsal|multi"]';
+state.osmStore=new Map(); state.osmZoneIds={}; state.geomCache={};
+let osmLayer=null, osmLoadedBounds=null, osmLoading=false, zoneLayer=null, userDot=null;
+const cellKey=(lat,lng)=>Math.round(lat*2000)+':'+Math.round(lng*1400); // ~55 m
+// Serveurs publics Overpass (OpenStreetMap) : si l'un est saturé, on passe au suivant
+const OVERPASS_SERVERS=[
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
+];
+let overpassBest=0;
+async function overpass(q,maxSec=90){
+  let lastErr=null;
+  for(let k=0;k<OVERPASS_SERVERS.length;k++){
+    const idx=(overpassBest+k)%OVERPASS_SERVERS.length, url=OVERPASS_SERVERS[idx];
+    const ctrl=new AbortController(), timer=setTimeout(()=>ctrl.abort(),maxSec*1000);
+    try{
+      const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(q),signal:ctrl.signal});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const json=await r.json();
+      if(json.remark&&/runtime error|timed out/i.test(json.remark)&&!(json.elements||[]).length)throw new Error('requête trop lourde');
+      overpassBest=idx;                       // on garde le serveur qui a répondu pour la suite
+      return json.elements||[];
+    }catch(e){lastErr=e;console.warn('Overpass',url,e.message);}
+    finally{clearTimeout(timer);}
+  }
+  throw new Error(lastErr&&lastErr.name==='AbortError'?'les serveurs OpenStreetMap mettent trop de temps':'aucun serveur OpenStreetMap joignable (réseau, bloqueur ou serveurs saturés)');
+}
+function storeOsm(els){
+  const ids=[];
+  els.forEach(el=>{
+    const lat=el.lat??el.center?.lat, lng=el.lon??el.center?.lon; if(lat==null)return;
+    const id=el.type+'/'+el.id; ids.push(id);
+    if(!state.osmStore.has(id))state.osmStore.set(id,{osm_id:id,lat,lng,tags:el.tags||{}});
+  });
+  return ids;
+}
+// Terrains de la zone affichée quand on zoome (hors zone choisie)
+async function loadOsmPitches(){
+  if(!map||map.getZoom()<13)return;
+  const b=map.getBounds();
+  if(osmLoadedBounds&&osmLoadedBounds.contains(b))return;
+  if(osmLoading)return; osmLoading=true;
+  const big=b.pad(0.3);
+  const bbox=[big.getSouth(),big.getWest(),big.getNorth(),big.getEast()].map(v=>v.toFixed(5)).join(',');
+  try{storeOsm(await overpass(`[out:json][timeout:25];${PITCH}(${bbox});out center tags 600;`,30));osmLoadedBounds=big;renderOsm();}
+  catch(e){console.warn('Overpass',e);}
+  finally{osmLoading=false;}
+}
+function dbIndex(){
+  const ids=new Set(), cells=new Set();
+  state.terrains.forEach(t=>{if(t.osm_id)ids.add(t.osm_id);cells.add(cellKey(t.lat,t.lng));});
+  return {ids,cells,has:p=>ids.has(p.osm_id)||cells.has(cellKey(p.lat,p.lng))};
+}
+function deCells(){const c=new Set();for(const p of state.osmStore.values())if(p.src==='dataes')c.add(cellKey(p.lat,p.lng));return c;}
+function renderOsm(){
+  if(!map)return;
+  if(!osmLayer){
+    osmLayer=L.markerClusterGroup
+      ?L.markerClusterGroup({chunkedLoading:true,showCoverageOnHover:false,maxClusterRadius:50,disableClusteringAtZoom:16,
+        iconCreateFunction:c=>L.divIcon({className:'',iconSize:[30,30],
+          html:`<div style="width:30px;height:30px;border-radius:50%;background:rgba(154,160,166,.85);color:#111;font-weight:800;font-size:11.5px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;">${c.getChildCount()}</div>`})})
+      :L.layerGroup();
+    osmLayer.addTo(map);
+  }
+  osmLayer.clearLayers();
+  if(state.mapFilter!=='all'){updateHint();return;}
+  const idx=dbIndex(), icon=L.divIcon({className:'',html:'<div style="width:14px;height:14px;border-radius:50%;background:#9aa0a6;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.6);"></div>',iconSize:[14,14],iconAnchor:[7,7]});
+  const mks=[];
+  const de=deCells(), iconDE=L.divIcon({className:'',html:'<div style="width:15px;height:15px;border-radius:50%;background:#cbd5e1;border:2.5px solid #facc15;box-shadow:0 1px 4px rgba(0,0,0,.6);"></div>',iconSize:[15,15],iconAnchor:[7,7]});
+  for(const p of state.osmStore.values()){
+    if(idx.has(p))continue;
+    if(p.src!=='dataes'&&de.has(cellKey(p.lat,p.lng)))continue;
+    mks.push(L.marker([p.lat,p.lng],{icon:p.src==='dataes'?iconDE:icon}).on('click',()=>openOsmPitch(p)));
+  }
+  if(osmLayer.addLayers)osmLayer.addLayers(mks); else mks.forEach(m=>osmLayer.addLayer(m));
+  computeZoneMissing(); updateHint();
+}
+
+/* ---------- Contour lumineux d'une ville / d'un département / d'une région ---------- */
+async function zoneGeometry(z){
+  const key=z.kind+':'+z.code; if(key in state.geomCache)return state.geomCache[key];
+  let gj=null;
+  try{
+    if(z.kind==='ville'){
+      gj=await fetch(`https://geo.api.gouv.fr/communes/${z.code}?format=geojson&geometry=contour`).then(r=>r.ok?r.json():null);
+    }else{
+      // Le département du Rhône est coupé en deux depuis 2015 : Rhône + Métropole de Lyon
+      const names=(z.kind==='departement'&&z.code==='69')?['Rhône','Métropole de Lyon']:[z.nom];
+      const outremer=/^9[78]/.test(z.code)||['01','02','03','04','06'].includes(z.code)&&z.kind==='region';
+      const want=z.kind==='region'?['state','region','country','territory']:['county','state_district','state','territory'];
+      const feats=[];
+      for(const n of names){
+        const res=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&polygon_geojson=1&polygon_threshold=0.002&limit=8&accept-language=fr${outremer?'':'&countrycodes=fr'}&q=${encodeURIComponent(n)}`).then(r=>r.json());
+        const poly=x=>x.geojson&&/Polygon/.test(x.geojson.type);
+        const hit=res.find(x=>x.category==='boundary'&&x.type==='administrative'&&want.includes(x.addresstype)&&poly(x))
+               ||res.find(x=>x.category==='boundary'&&poly(x));
+        if(hit)feats.push({type:'Feature',properties:{},geometry:hit.geojson});
+      }
+      if(feats.length)gj={type:'FeatureCollection',features:feats};
+    }
+  }catch(e){console.warn('contour',e);}
+  return state.geomCache[key]=gj;
+}
+function drawZone(gj){
+  if(zoneLayer){map.removeLayer(zoneLayer);zoneLayer=null;}
+  if(!gj)return null;
+  const halo=L.geoJSON(gj,{interactive:false,style:{color:'#4ade80',weight:14,opacity:.16,fill:false}});
+  const line=L.geoJSON(gj,{interactive:false,style:{color:'#a7f3d0',weight:2.6,opacity:1,fillColor:'#22c55e',fillOpacity:.05,className:'zone-glow'}});
+  zoneLayer=L.layerGroup([halo,line]).addTo(map);
+  return line.getBounds();
+}
+function clearZone(){
+  if(zoneLayer){map.removeLayer(zoneLayer);zoneLayer=null;}
+  state.zone=null; state.zoneRows=null; state.zoneMissing=null; updateHint();
+}
+
+/* ---------- Tous les terrains OSM d'une zone (ville, département, région, outre-mer) ---------- */
+/* =========================================================
+   DATA ES — base officielle des équipements sportifs (ministère des Sports)
+   API ouverte : https://equipements.sports.gouv.fr/api/explore/v2.1 · Licence Ouverte 2.0
+   ========================================================= */
+const DATAES_BASE='https://equipements.sports.gouv.fr/api/explore/v2.1/catalog/datasets/data-es-equipement';
+state.dataesZoneIds={}; let dataesSchema=null;
+const nz=s=>norm(String(s||'')).replace(/[^a-z0-9]+/g,' ').trim();
+// On lit la description officielle du jeu de données pour trouver les bonnes colonnes,
+// au lieu de deviner leurs noms : si le ministère les renomme, l'appli s'adapte.
+async function dataesFields(){
+  if(dataesSchema)return dataesSchema;
+  const meta=await fetch(DATAES_BASE).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();});
+  const fields=meta.fields||meta.dataset?.fields||[];
+  const find=(re,not)=>{const f=fields.find(f=>{const t=nz(f.name)+' | '+nz(f.label);return re.test(t)&&!(not&&not.test(t));});return f?.name||null;};
+  const geo=fields.find(f=>f.type==='geo_point_2d')?.name;
+  if(!geo)throw new Error('format de la base Data ES inattendu');
+  dataesSchema={geo,
+    id:find(/numero|(code|id)\w* equip|equip\w* (numero|code|id)/,/type|famille|insee|dep|postal|commune|instal/),
+    type:find(/type( d)? equip|equip\w* type|typequip/,/famille|code/),
+    famille:find(/famille/,/code/),
+    nom:find(/(nom|libelle|lib)\w*.{0,20}equip|equip\w* (nom|libelle|lib)/,/type|famille|instal/),
+    inst:find(/(nom|libelle|lib)\w*.{0,20}instal|instal\w* (nom|libelle|lib)/,/type|code/),
+    commune:find(/(nom|libelle|lib)\w*.{0,10}commune|commune\w* (nom|libelle|lib)/,/code|insee/),
+    insee:find(/(code|insee)\w*.{0,10}commune|commune\w*.{0,10}(code|insee)|inseecom/,/postal/),
+    dep:find(/code\w*.{0,10}dep|dep\w*.{0,10}code/,/nom|libelle/),
+    eclairage:find(/eclair/),
+    sol:find(/nature\w* (du )?sol|revetement|\bsol\b/,/surface|tribune|niveau/),
+    acces:find(/acces libre|libre acces|acces individuel/),
+    adresse:find(/adresse|\bvoie\b/,/mail|web|url|code/),
+    etab:find(/(type|nature)\w*.{0,15}(proprietaire|etablissement)/),
+  };
+  return dataesSchema;
+}
+const boolish=v=>v===true||/^(oui|true|1|yes)$/i.test(String(v))?true:(v===false||/^(non|false|0|no)$/i.test(String(v))?false:null);
+const PETITS=new Set(['de','du','des','la','le','les','d','l','et','à','au','aux','en','sur','sous']);
+const nicename=s=>{s=String(s||'').trim(); if(!s)return '';
+  if(s===s.toUpperCase())s=s.toLowerCase().replace(/(^|[\s'’\-])(\p{L}+)/gu,(m,a,w,i)=>a+(i>0&&PETITS.has(w)?w:w[0].toUpperCase()+w.slice(1)));
+  return s;};
+function dataesRow(row,S){
+  const g=row[S.geo];
+  const lat=g?.lat??(Array.isArray(g)?g[0]:null), lng=g?.lon??(Array.isArray(g)?g[1]:null);
+  if(lat==null||lng==null)return null;
+  const type=String(row[S.type]||''), fam=String(row[S.famille]||'');
+  if(!/foot|futsal|multisport|city|soccer/i.test(type+' '+fam))return null;            // seulement le foot
+  if(/salle|gymnase|piste|bassin/i.test(type)&&!/futsal|foot/i.test(type))return null;  // pas les salles de sport génériques
+  const nom=nicename(row[S.nom]), inst=nicename(row[S.inst]);
+  const generic=!nom||/^(terrain|city|plateau|multisport|aire|stade|salle)\b/i.test(nom);
+  const name=((generic&&inst)?inst+(nom&&norm(nom)!==norm(inst)?' · '+nom:''):(nom||inst||type)).slice(0,80);
+  const all=Object.values(row).filter(v=>typeof v==='string').join(' ');
+  const insee=String(row[S.insee]||'');
+  return {osm_id:'dataes/'+(row[S.id]||`${(+lat).toFixed(5)},${(+lng).toFixed(5)}`),lat:+lat,lng:+lng,src:'dataes',
+    tags:{name,type_txt:type,lit:boolish(row[S.eclairage]),surface:String(row[S.sol]||''),access:boolish(row[S.acces]),
+      commune:nicename(row[S.commune])||null,insee,dep:String(row[S.dep]||'')||(insee?(/^9[78]/.test(insee)?insee.slice(0,3):insee.slice(0,2)):null),
+      adresse:nicename(row[S.adresse])||null,uni:/universit|enseignement superieur|campus|crous|suaps/.test(norm(all))}};
+}
+async function fetchDataES(b,polys){
+  const S=await dataesFields();
+  const sel=[...new Set([S.geo,S.id,S.type,S.famille,S.nom,S.inst,S.commune,S.insee,S.dep,S.eclairage,S.sol,S.acces,S.adresse,S.etab].filter(Boolean))];
+  const box=`in_bbox(${S.geo}, ${b.getSouth().toFixed(5)}, ${b.getWest().toFixed(5)}, ${b.getNorth().toFixed(5)}, ${b.getEast().toFixed(5)})`;
+  const typeF=S.type?` and (search(${S.type}, "football") or search(${S.type}, "futsal") or search(${S.type}, "multisports") or search(${S.type}, "city"))`:'';
+  const url=w=>`${DATAES_BASE}/exports/json?select=${encodeURIComponent(sel.join(','))}&where=${encodeURIComponent(w)}`;
+  let r=await fetch(url(box+typeF));
+  if(!r.ok&&typeF)r=await fetch(url(box));            // si le filtre par type est refusé, on filtre nous-mêmes
+  if(!r.ok)throw new Error('Data ES : HTTP '+r.status);
+  const rows=await r.json();
+  return (Array.isArray(rows)?rows:(rows.results||[])).map(row=>dataesRow(row,S)).filter(p=>p&&(!polys||inPolys(p.lat,p.lng,polys)));
+}
+function storeDataES(arr){
+  return arr.map(([id,lat,lng,tags])=>{state.osmStore.set(id,{osm_id:id,lat,lng,tags:tags||{},src:'dataes'});return id;});
+}
+async function loadDataES(z,key){
+  if(z.kind==='region'||state.dataesZoneIds[key])return;     // une région = la somme de ses départements
+  const dk='dataes:'+key;
+  try{
+    const {data}=await sb.from('osm_cache').select('elements,fetched_at').eq('zone_key',dk).maybeSingle();
+    if(data&&Date.now()-new Date(data.fetched_at)<7*864e5){state.dataesZoneIds[key]=storeDataES(data.elements);renderOsm();return;}
+  }catch(e){}
+  const gj=await zoneGeometry(z); if(!gj)return;
+  const items=await fetchDataES(L.geoJSON(gj).getBounds(),polysOf(gj));
+  const compact=items.map(p=>[p.osm_id,+p.lat.toFixed(6),+p.lng.toFixed(6),p.tags]);
+  state.dataesZoneIds[key]=storeDataES(compact); renderOsm();
+  if(uid())sb.from('osm_cache').upsert({zone_key:dk,elements:compact,fetched_at:new Date().toISOString()}).then(()=>{},()=>{});
+}
+function combinedIds(key){
+  return [...new Set([...(state.osmZoneIds[key]||state.osmZonePartial[key]||[]),...(state.dataesZoneIds[key]||[])])];
+}
+function dataesInfos(t){
+  const ty=norm(t.type_txt), so=norm(t.surface);
+  const type=t.uni?'universite':(/five|foot\w* ?a ?5|futsal|soccer/.test(ty)?'five':(/multisport|city/.test(ty)?'city':'club'));
+  const surf=/synth/.test(so)?'Gazon synthétique':(/naturel|gazon|herbe|pelouse/.test(so)?'Pelouse naturelle':(/bitum|beton|enrob|asphalt|resine/.test(so)?'Béton / bitume':(/stabil|sable|terre|schiste/.test(so)?'Stabilisé':null)));
+  return {type,surf,lit:t.lit===true?'Éclairé':(t.lit===false?'Non éclairé':null),acces:t.access===true?'Accès libre':null};
+}
+const getInfos=p=>p.src==='dataes'?dataesInfos(p.tags):osmInfos(p.tags);
+
+function zoneAreaQuery(z){
+  if(z.kind==='ville')return `area["ref:INSEE"="${z.code}"]["admin_level"="8"]->.a;`;
+  const codes=z.kind==='departement'?[z.code]:state.depts.filter(d=>d.region_code===z.code).map(d=>d.code);
+  return `area["ref:INSEE"~"^(${codes.join('|')})"]["admin_level"="8"]["boundary"="administrative"]->.a;`;
+}
+/* ---------- Géométrie : savoir si un point est dans une ville / un département ---------- */
+function polysOf(gj){
+  const out=[];
+  const add=g=>{
+    if(!g)return;
+    if(g.type==='Polygon')out.push(g.coordinates);
+    else if(g.type==='MultiPolygon')g.coordinates.forEach(c=>out.push(c));
+    else if(g.type==='Feature')add(g.geometry);
+    else if(g.type==='FeatureCollection')g.features.forEach(add);
+    else if(g.type==='GeometryCollection')g.geometries.forEach(add);
+  };
+  add(gj);
+  return out.map(rings=>{
+    let a=180,b=90,c=-180,d=-90;
+    rings[0].forEach(([x,y])=>{a=Math.min(a,x);c=Math.max(c,x);b=Math.min(b,y);d=Math.max(d,y);});
+    return {rings,bb:[a,b,c,d]};
+  });
+}
+function inRing(x,y,ring){
+  let ins=false;
+  for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+    const [xi,yi]=ring[i],[xj,yj]=ring[j];
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))ins=!ins;
+  }
+  return ins;
+}
+function inPolys(lat,lng,polys){
+  return polys.some(p=>lng>=p.bb[0]&&lng<=p.bb[2]&&lat>=p.bb[1]&&lat<=p.bb[3]
+    &&inRing(lng,lat,p.rings[0])&&!p.rings.slice(1).some(h=>inRing(lng,lat,h)));
+}
+
+/* ---------- Terrains d'une zone : cache FootZone d'abord, OpenStreetMap ensuite ---------- */
+const OSM_TAGS_KEEP=['name','surface','lit','access','sport','operator'];
+state.zoneOsmLoading={}; state.communesCache={};
+function storeCompact(arr){
+  return arr.map(([id,lat,lng,tags])=>{
+    if(!state.osmStore.has(id))state.osmStore.set(id,{osm_id:id,lat,lng,tags:tags||{}});
+    return id;
+  });
+}
+function loadZoneOsm(z){
+  const key=z.kind+':'+z.code;
+  if(state.osmZoneIds[key]){renderOsm();return Promise.resolve();}
+  // une seule recherche à la fois par zone (l'affichage et l'import partagent le même résultat)
+  if(!state.zoneOsmLoading[key])state.zoneOsmLoading[key]=fetchZoneOsm(z,key).finally(()=>delete state.zoneOsmLoading[key]);
+  return state.zoneOsmLoading[key];
+}
+async function fetchZoneOsm(z,key){
+  const dP=loadDataES(z,key).catch(e=>{console.warn('Data ES',e);state.dataesError=e.message;});
+  try{await fetchZoneOsmOnly(z,key);}
+  catch(e){await dP; if(state.dataesZoneIds[key]&&state.dataesZoneIds[key].length){computeZoneMissing();return;} throw e;}
+  await dP; computeZoneMissing();
+}
+async function fetchZoneOsmOnly(z,key){
+  // 1. Cache partagé : si quelqu'un a déjà ouvert cette zone, c'est instantané
+  try{
+    const {data}=await sb.from('osm_cache').select('elements,fetched_at').eq('zone_key',key).maybeSingle();
+    if(data&&Date.now()-new Date(data.fetched_at)<7*864e5){state.osmZoneIds[key]=storeCompact(data.elements);renderOsm();return;}
+  }catch(e){}
+  if(await progressiveZone(z,key))return;   // région : département par département ; département : sa ville d'abord
+  // 2. OpenStreetMap par rectangle (bien plus rapide qu'une recherche par zone administrative),
+  //    puis on ne garde que les terrains à l'intérieur du contour
+  const gj=await zoneGeometry(z);
+  let els;
+  if(gj){
+    const b=L.geoJSON(gj).getBounds(), polys=polysOf(gj);
+    const bbox=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(v=>v.toFixed(5)).join(',');
+    els=(await overpass(`[out:json][timeout:120];${PITCH}(${bbox});out center tags qt;`,150))
+      .filter(el=>{const lat=el.lat??el.center?.lat,lng=el.lon??el.center?.lon;return lat!=null&&inPolys(lat,lng,polys);});
+  }else{
+    els=await overpass(`[out:json][timeout:180];${zoneAreaQuery(z)}${PITCH}(area.a);out center tags qt;`,200);
+  }
+  const compact=els.filter(el=>(el.lat??el.center?.lat)!=null).map(el=>{
+    const t={}; OSM_TAGS_KEEP.forEach(k=>{if(el.tags?.[k])t[k]=el.tags[k];});
+    return [el.type+'/'+el.id,+(el.lat??el.center.lat).toFixed(6),+(el.lon??el.center.lon).toFixed(6),t];
+  });
+  state.osmZoneIds[key]=storeCompact(compact);
+  if(state.zone&&state.zone.kind+':'+state.zone.code===key)state.zoneProgress=null;
+  renderOsm();
+  if(uid())sb.from('osm_cache').upsert({zone_key:key,elements:compact,fetched_at:new Date().toISOString()}).then(()=>{},()=>{});
+}
+
+/* ---------- Import des terrains OpenStreetMap d'une ville ou d'un département ---------- */
+async function deptCommunes(code){
+  if(state.communesCache[code])return state.communesCache[code];
+  const gj=await fetch(`https://geo.api.gouv.fr/departements/${code}/communes?format=geojson&geometry=contour&fields=nom`).then(r=>r.json());
+  return state.communesCache[code]=(gj.features||[]).map(f=>({nom:f.properties.nom,polys:polysOf(f)}));
+}
+async function scanZoneOsm(){
+  const z=state.zone, box=$('#osmZoneBox'), key=z.kind+':'+z.code;
+  box.innerHTML='<div style="font-size:13px;color:var(--text-dim);">⏳ Récupération des terrains de la zone…</div>';
+  try{
+    await loadZoneOsm(z);
+    const ids=combinedIds(key), idx=dbIndex(), existing=new Set();
+    for(let i=0;i<ids.length;i+=150){
+      const {data}=await sb.from('terrains').select('osm_id').in('osm_id',ids.slice(i,i+150));
+      (data||[]).forEach(d=>existing.add(d.osm_id));
+    }
+    let pts=ids.map(id=>state.osmStore.get(id)).filter(p=>p&&!existing.has(p.osm_id)&&!idx.has(p));
+    pts.sort((a,b)=>((b.src==='dataes')*2+(b.tags.name?1:0))-((a.src==='dataes')*2+(a.tags.name?1:0)));       // les terrains nommés en priorité
+    const cells=new Set();                                       // un seul point par complexe (~70 m)
+    pts=pts.filter(p=>{const c=Math.round(p.lat*1500)+':'+Math.round(p.lng*1100);if(cells.has(c))return false;cells.add(c);return true;});
+    let communes=null;
+    if(z.kind==='departement'&&pts.length){
+      box.innerHTML='<div style="font-size:13px;color:var(--text-dim);">⏳ Attribution des villes…</div>';
+      try{communes=await deptCommunes(z.code);}catch(e){}
+    }
+    const dep=z.kind==='ville'?z.dep:z.code, region=state.depts.find(d=>d.code===dep)?.region_code||null;
+    state.zoneOsm=pts.map(p=>{
+      const i=getInfos(p);
+      let ville=z.kind==='ville'?z.nom:(p.src==='dataes'?p.tags.commune:null);
+      if(!ville&&communes){const c=communes.find(c=>inPolys(p.lat,p.lng,c.polys));if(c)ville=c.nom;}
+      const base={universite:'Terrain universitaire',five:'Terrain de five',club:'Terrain de club',city:'Terrain de foot'}[i.type];
+      return {osm_id:p.osm_id,lat:p.lat,lng:p.lng,nom:(p.tags.name||`${base} · ${ville||depName(dep)}`).slice(0,80),
+        type:i.type,eclairage:i.lit,revetement:i.surf,acces:i.acces,ville,departement:dep,region};
+    });
+    const n=state.zoneOsm.length;
+    box.innerHTML=n
+      ?`<div style="font-size:13.5px;"><b>${n}</b> terrain${n>1?'s':''} à ajouter à FootZone.</div>
+        <button class="pill active" style="width:100%;justify-content:center;margin-top:10px;${greenBtn}" onclick="importZoneOsm()">➕ Ajouter ces ${n} terrains</button>
+        <div style="font-size:11.5px;color:var(--text-faint);margin-top:6px;">Noms et types devinés à partir d'OpenStreetMap : tu pourras les corriger dans chaque fiche.</div>`
+      :'<div style="font-size:13.5px;">✅ Tous les terrains recensés de la zone sont déjà sur FootZone.</div>';
+  }catch(e){
+    box.innerHTML=`<div style="font-size:13px;color:var(--red);">Échec : ${esc(e.message)}</div><button class="pill" style="width:100%;justify-content:center;margin-top:8px;" onclick="scanZoneOsm()">Réessayer</button>`;
+  }
+}
+
+function computeZoneMissing(){
+  const z=state.zone; if(!z)return;
+  const ids=combinedIds(z.kind+':'+z.code); if(!ids.length)return;
+  const idx=dbIndex(), de=deCells();
+  const miss=ids.map(id=>state.osmStore.get(id)).filter(p=>p&&!idx.has(p)&&!(p.src!=='dataes'&&de.has(cellKey(p.lat,p.lng))));
+  state.zoneMissing=miss.length; state.zoneMissingDE=miss.filter(p=>p.src==='dataes').length;
+  const el=$('#zoneOsmCount'); if(el)el.innerHTML=osmCountText();
+}
+function osmCountText(){
+  if(state.zoneOsmError)return `⚠️ Terrains OpenStreetMap indisponibles : ${esc(state.zoneOsmError)} <span style="color:var(--accent);cursor:pointer;" onclick="openZone(state.zone)">Réessayer</span>`;
+  const prog=state.zoneProgress?`<div style="color:var(--text-faint);margin-top:4px;">${state.zoneProgress}</div>`:'';
+  if(state.zoneMissing==null)return prog||'⏳ Recherche de tous les terrains de la zone sur OpenStreetMap…';
+  if(!state.zoneMissing)return (state.zoneProgress?'':'✅ Tous les terrains recensés de la zone sont déjà sur FootZone.')+prog;
+  return prog.replace('margin-top:4px','margin-bottom:4px')+`⚪ <b>${state.zoneMissing}</b> autre${state.zoneMissing>1?'s':''} terrain${state.zoneMissing>1?'s':''} recensé${state.zoneMissing>1?'s':''} (points gris sur la carte${state.zoneMissingDE?`, dont ${state.zoneMissingDE} de la base officielle Data ES`:''}) — touche-en un pour l'ajouter.`;
+}
+function updateHint(){
+  const h=$('#mapHint'); if(!h)return; const z=state.zone;
+  if(z){
+    const n=state.zoneRows?.length??0;
+    h.innerHTML=`📍 <b>${esc(z.nom)}</b> · ${n} terrain${n>1?'s':''}${state.zoneMissing?` · <span style="color:#cbd5e1;">+${state.zoneMissing} ⚪</span>`:''}`;
+    h.onclick=()=>renderZone(state.zoneRows||[]);
+  }else{h.textContent='🔍 Cherche une ville, un département ou une région';h.onclick=()=>$('#mapSearch').focus();}
+}
+
+/* ---------- Me localiser : la carte s'ouvre sur la ville de l'utilisateur ---------- */
+async function openCommuneAt(lat,lng,sheet){
+  const c=(await fetch(`https://geo.api.gouv.fr/communes?lat=${lat}&lon=${lng}&fields=nom,code,codeDepartement,codeRegion,centre&format=json`).then(r=>r.json()).catch(()=>[]))[0];
+  if(c){state.userCommune={nom:c.nom,code:c.code,dep:c.codeDepartement,reg:c.codeRegion};
+    await openZone({kind:'ville',nom:c.nom,code:c.code,dep:c.codeDepartement,reg:c.codeRegion,centre:c.centre?.coordinates},{sheet});return true;}
+  return false;
+}
+async function zoneFromProfile(){
+  const p=state.profile; if(!p?.ville)return false;
+  const c=(await fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(p.ville)}${p.departement?'&codeDepartement='+p.departement:''}&fields=nom,code,codeDepartement,codeRegion,centre&boost=population&limit=1`).then(r=>r.json()).catch(()=>[]))[0];
+  if(c){state.userCommune={nom:c.nom,code:c.code,dep:c.codeDepartement,reg:c.codeRegion};
+    await openZone({kind:'ville',nom:c.nom,code:c.code,dep:c.codeDepartement,reg:c.codeRegion,centre:c.centre?.coordinates},{sheet:false});return true;}
+  return false;
+}
+function locateUser(manual){
+  if(!navigator.geolocation){if(manual)toast('Localisation non disponible sur cet appareil');else zoneFromProfile();return;}
+  if(manual)toast('📍 Localisation…');
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat=pos.coords.latitude, lng=pos.coords.longitude;
+    if(userDot)map.removeLayer(userDot);
+    userDot=L.circleMarker([lat,lng],{radius:7,color:'#fff',weight:2,fillColor:'#3b82f6',fillOpacity:1}).addTo(map);
+    if(!(await openCommuneAt(lat,lng,false)))map.setView([lat,lng],13); // hors communes françaises
+  },async err=>{
+    if(manual)toast(err.code===1?'Localisation refusée : autorise-la dans ton navigateur':'Position introuvable');
+    else zoneFromProfile();
+  },{enableHighAccuracy:false,timeout:9000,maximumAge:600000});
+}
+
+function osmInfos(t){
+  const surf={artificial_turf:'Gazon synthétique',grass:'Pelouse naturelle',asphalt:'Béton / bitume',concrete:'Béton / bitume',tartan:'Béton / bitume',acrylic:'Béton / bitume',fine_gravel:'Stabilisé',dirt:'Stabilisé',sand:'Stabilisé'}[t.surface];
+  const lit=t.lit==='yes'?'Éclairé':(t.lit==='no'?'Non éclairé':null);
+  const acces=['private','members'].includes(t.access)?'Adhésion club':(['yes','public','permissive'].includes(t.access)?'Accès libre':null);
+  const five=/five|urban ?soccer|soccer ?5|foot ?5/i.test(t.name||'')||t.sport==='futsal';
+  const uni=/universit|campus|suaps|\biut\b|insa|crous/i.test((t.name||'')+' '+(t.operator||''));
+  return {surf,lit,acces,type:uni?'universite':(five?'five':(acces==='Adhésion club'?'club':'city'))};
+}
+function openOsmPitch(p){
+  const t=p.tags, i=getInfos(p), de=p.src==='dataes';
+  openSheet('sheetTerrain',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+      <div>
+        <div style="font-size:11px;font-weight:800;color:${de?'var(--gold)':'var(--text-faint)'};letter-spacing:.5px;">${de?'TERRAIN OFFICIEL · DATA ES':'TERRAIN REPÉRÉ SUR OPENSTREETMAP'}</div>
+        <div style="font-size:19px;font-weight:800;margin-top:2px;">${esc(t.name||'Terrain sans nom')}</div>
+      </div>${closeBtn}
+    </div>
+    <div class="sheet-body section-pad" style="margin-top:10px;">
+      <div class="card" style="padding:12px;font-size:13.5px;line-height:1.7;">
+        ${de&&t.type_txt?`Type : ${esc(t.type_txt)}<br>`:''}Revêtement : ${esc(i.surf||(de&&t.surface)||'inconnu')}<br>Éclairage : ${esc(i.lit||'inconnu')}<br>Accès : ${esc(i.acces||'inconnu')}
+        ${de&&(t.adresse||t.commune)?`<br>📍 ${esc([t.adresse,t.commune].filter(Boolean).join(', '))}`:''}
+      </div>
+      ${de?'<div style="font-size:11px;color:var(--text-faint);margin-top:6px;">Source : recensement officiel Data ES, ministère des Sports (Licence Ouverte 2.0)</div>':''}
+      <div style="font-size:12.5px;color:var(--text-faint);margin-top:10px;">Ce terrain n'est pas encore sur FootZone. Ajoute-le pour activer les avis, le classement et le tchat.</div>
+      <button class="pill active" style="width:100%;justify-content:center;margin-top:12px;${greenBtn}" onclick='addOsmPitch("${p.osm_id}")'>➕ Ajouter à FootZone</button>
+    </div>`);
+}
+function addOsmPitch(id){if(!needAuth())return;
+  const p=state.osmStore.get(id); if(!p)return;
+  const i=getInfos(p);
+  openCreateTerrain({lat:p.lat,lng:p.lng,osm_id:p.osm_id,nom:p.tags.name||'',type:i.type,eclairage:i.lit,revetement:i.surf,acces:i.acces,
+    adresse:p.src==='dataes'?[p.tags.adresse,p.tags.commune].filter(Boolean).join(', '):undefined});
+}
+
+$('#btnLocate').onclick=()=>locateUser(true);
+$('#btnPlan').onclick=()=>{$('#btnPlan').style.color='var(--text)';$('#btnSat').style.color='var(--text-dim)';if(map){map.removeLayer(window._satLayer);window._planLayer.addTo(map);}};
+$('#btnSat').onclick=()=>{$('#btnSat').style.color='var(--text)';$('#btnPlan').style.color='var(--text-dim)';if(map){map.removeLayer(window._planLayer);window._satLayer.addTo(map);}};
+
+/* =========================================================
+   FICHE TERRAIN
+   ========================================================= */
+function openTerrain(id){state.currentTerrain=id;renderTerrainSheet('infos');
+  const t=state.terrainStore.get(id);if(t)track('terrain_vu',{terrain_id:t.id,ville:t.ville,departement:t.departement,region:t.region});}
+async function renderTerrainSheet(tab){
+  const t=state.terrains.find(x=>x.id===state.currentTerrain); if(!t)return;
+  if(state.terrainChannel){sb.removeChannel(state.terrainChannel);state.terrainChannel=null;}
+  const typeLabel=TYPE_LABELS[t.type]||'TERRAIN';
+  const tabs=[['infos','Infos'],...(t.type==='club'?[]:[['matchs','Matchs']]),['photos','Médias'],['avis',`Avis · ${t.nb_avis}`],['classement','Classement'],['chat','Tchat']];
+  const head=`
+    <div class="sheet-handle"></div>
+    <div class="sheet-body">
+      <div class="section-pad" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+        <div>
+          <div style="font-size:11px;font-weight:800;color:var(--blue);letter-spacing:.5px;">${typeLabel}</div>
+          <div style="font-size:20px;font-weight:800;margin-top:2px;">${esc(t.nom)}</div>
+          <div style="font-size:13px;color:var(--text-faint);margin-top:4px;">📍 ${esc(t.adresse)}</div>
+          <div style="font-size:13px;color:var(--gold);margin-top:4px;">★ ${t.note_moyenne||'—'} <span style="color:var(--text-faint);">(${t.nb_avis} avis)</span></div>
+        </div>${closeBtn}
+      </div>
+      <div class="segrow" style="margin-top:12px;overflow-x:auto;">
+        ${tabs.map(([k,l])=>`<div class="seg ${tab===k?'active':''}" style="flex:none;padding:8px 12px;font-size:12.5px;" onclick="renderTerrainSheet('${k}')">${l}</div>`).join('')}
+      </div>
+      <div id="terrainBody" style="margin-top:6px;"><div style="padding:16px;color:var(--text-faint);">Chargement…</div></div>
+    </div>`;
+  openSheet('sheetTerrain',head);
+  const body=$('#terrainBody');
+
+  if(tab==='photos'){await renderMedias(t,body);}
+  if(tab==='matchs'){await renderMatchs(t,body);}
+
+  if(tab==='infos'){
+    const {data:cover}=await sb.from('terrain_photos').select('url').eq('terrain_id',t.id).order('created_at',{ascending:false}).limit(1);
+    if(t.type!=='club')setTimeout(()=>loadStatut(t),0);
+    body.innerHTML=(t.type==='club'?'<div class="section-pad" style="margin-bottom:10px;"><div class="card" style="padding:12px;font-size:13px;color:var(--text-dim);">🟢 Terrain de club : réservé à ses licenciés et aux matchs officiels. Avis, photos et tchat restent ouverts.</div></div>':'<div id="statutBox"></div>')+(cover&&cover[0]?`<div class="section-pad" style="margin-bottom:10px;"><img class="media" style="margin-top:0;max-height:200px;" src="${esc(cover[0].url)}" alt="" onclick="renderTerrainSheet('photos')"></div>`:'')+`
+      <div style="display:flex;gap:10px;padding:0 16px;">
+        <div class="card" style="flex:1;padding:12px;"><div style="font-size:11px;color:var(--text-faint);font-weight:700;">ÉCLAIRAGE</div><div style="font-size:14px;margin-top:4px;">${esc(t.eclairage||'—')}</div></div>
+        <div class="card" style="flex:1;padding:12px;"><div style="font-size:11px;color:var(--text-faint);font-weight:700;">REVÊTEMENT</div><div style="font-size:14px;margin-top:4px;">${esc(t.revetement||'—')}</div></div>
+      </div>
+      <div class="card" style="margin:10px 16px 0;padding:12px;"><div style="font-size:11px;color:var(--text-faint);font-weight:700;">ACCÈS</div><div style="font-size:14px;margin-top:4px;">${esc(t.acces||'—')}</div></div>
+      ${t.ville?`<div class="section-pad" style="margin-top:10px;font-size:13px;color:var(--text-dim);">🏙️ ${esc(t.ville)}${t.departement?` · ${esc(depName(t.departement))} (${esc(t.departement)})`:''}</div>`:''}
+      ${t.created_by&&t.created_by===uid()?`<div class="section-pad" style="margin-top:10px;"><button class="pill" style="width:100%;justify-content:center;" onclick='openCreateTerrain(${JSON.stringify({id:t.id,lat:t.lat,lng:t.lng,nom:t.nom,type:t.type,adresse:t.adresse,eclairage:t.eclairage,revetement:t.revetement,acces:t.acces}).replace(/'/g,"&#39;")})'>✏️ Modifier ce terrain</button></div>`:''}`;
+  }
+
+  if(tab==='avis'){
+    const {data,error}=await sb.from('terrain_avis').select('note,texte,created_at,user_id,profiles(pseudo,handle)').eq('terrain_id',t.id).order('created_at',{ascending:false});
+    if(error)return fail(error,'avis');
+    const mine=data.find(a=>a.user_id===uid());
+    window._note=mine?.note||0;
+    body.innerHTML=`
+      <div class="card" style="margin:0 16px;padding:14px;">
+        <div style="font-size:13px;font-weight:700;">${mine?'Modifier ma note':'Noter ce terrain'}</div>
+        <div id="starPick" style="font-size:30px;letter-spacing:4px;margin-top:6px;cursor:pointer;"></div>
+        <textarea id="avisText" rows="2" placeholder="Ton avis sur le terrain…" style="${inputStyle}margin-top:8px;">${esc(mine?.texte||'')}</textarea>
+        <button class="pill active" style="width:100%;justify-content:center;margin-top:10px;${greenBtn}" onclick="saveAvis()">Publier mon avis</button>
+      </div>
+      <div class="section-pad" style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+        ${data.map(a=>`<div class="card" style="padding:12px;">
+          <div style="display:flex;justify-content:space-between;"><span style="font-weight:700;font-size:13.5px;">${esc(a.profiles?.pseudo)} <span style="color:var(--text-faint);font-weight:500;">@${esc(a.profiles?.handle)}</span></span><span style="color:var(--gold);font-size:13px;">${'★'.repeat(a.note)}</span></div>
+          ${a.texte?`<div style="font-size:13.5px;margin-top:4px;color:var(--text-dim);">${esc(a.texte)}</div>`:''}
+        </div>`).join('')||'<div style="color:var(--text-faint);font-size:13.5px;">Pas encore d\'avis. Sois le premier !</div>'}
+      </div>`;
+    drawStars();
+  }
+
+  if(tab==='classement'){
+    const {data:votes,error}=await sb.from('terrain_votes').select('voter_id,joueur_id').eq('terrain_id',t.id);
+    if(error)return fail(error,'votes');
+    const counts={}; votes.forEach(v=>counts[v.joueur_id]=(counts[v.joueur_id]||0)+1);
+    const myVotes=new Set(votes.filter(v=>v.voter_id===uid()).map(v=>v.joueur_id));
+    const ids=Object.keys(counts);
+    let players=[];
+    if(ids.length){const r=await sb.from('profiles').select('id,pseudo,handle').in('id',ids);players=r.data||[];}
+    players.sort((a,b)=>counts[b.id]-counts[a.id]);
+    body.innerHTML=`
+      <div class="section-pad" style="font-size:12.5px;color:var(--text-faint);margin-bottom:8px;">Vote pour les joueurs qui assurent sur ce terrain 👍</div>
+      ${players.map((p,i)=>voteRow(p,i+1,counts[p.id],myVotes.has(p.id))).join('')||'<div class="section-pad" style="color:var(--text-faint);font-size:13.5px;">Aucun vote pour l\'instant.</div>'}
+      <div class="section-pad" style="margin-top:12px;">
+        <input id="voteSearch" placeholder="Chercher un joueur pour voter…" style="${inputStyle}" oninput="searchVote(this.value)">
+        <div id="voteResults"></div>
+      </div>`;
+    window._myVotes=myVotes;
+  }
+
+  if(tab==='chat'){
+    const {data,error}=await sb.from('terrain_messages').select('id,texte,created_at,author_id,profiles(pseudo)').eq('terrain_id',t.id).order('created_at',{ascending:true}).limit(100);
+    if(error)return fail(error,'tchat');
+    body.innerHTML=`
+      <div id="terrainChatLog" style="padding:0 16px;display:flex;flex-direction:column;gap:8px;height:240px;overflow-y:auto;">
+        ${data.length?'':'<div id="chatEmpty" style="color:var(--text-faint);font-size:13.5px;">Lance la discussion sur ce terrain ⚽</div>'}
+      </div>
+      <div style="display:flex;gap:8px;padding:10px 16px 0;">
+        <input id="terrainChatInput" placeholder="Écrire un message…" maxlength="1000" style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:10px 14px;font-size:13.5px;" onkeydown="if(event.key==='Enter')sendTerrainChat()">
+        <button class="pill active" style="${greenBtn}" onclick="sendTerrainChat()">➤</button>
+      </div>`;
+    data.forEach(m=>appendBubble('#terrainChatLog',m.author_id===uid(),m.texte,m.profiles?.pseudo,m.created_at));
+    state.terrainChannel=sb.channel('terrain-'+t.id)
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'terrain_messages',filter:'terrain_id=eq.'+t.id},async payload=>{
+        const m=payload.new; if(!$('#terrainChatLog'))return;
+        let pseudo='';
+        if(m.author_id!==uid()){const r=await sb.from('profiles').select('pseudo').eq('id',m.author_id).maybeSingle();pseudo=r.data?.pseudo||'';}
+        appendBubble('#terrainChatLog',m.author_id===uid(),m.texte,pseudo,m.created_at);
+      }).subscribe();
+  }
+}
+async function addTerrainPhoto(){if(!needAuth())return;
+  const f=await pickFile('image/*'); if(!f)return;
+  toast('Envoi de la photo…');
+  try{
+    const url=await uploadMedia(f,'terrains');
+    const {error}=await sb.from('terrain_photos').insert({terrain_id:state.currentTerrain,user_id:uid(),url});
+    if(error)throw error;
+    toast('Photo ajoutée ✅'); renderTerrainSheet('photos');
+  }catch(e){fail(e,'photo');}
+}
+async function deleteTerrainPhoto(id){
+  if(!confirm('Supprimer cette photo ?'))return;
+  const {error}=await sb.from('terrain_photos').delete().eq('id',id);
+  if(error)return fail(error,'photo');
+  renderTerrainSheet('photos');
+}
+/* ---------- Chargement progressif : toujours la ville d'abord ---------- */
+state.osmZonePartial={};
+async function mainCityOf(dep){
+  // la ville de l'utilisateur si elle est dans ce département, sinon la plus peuplée
+  if(state.userCommune&&state.userCommune.dep===dep)return state.userCommune;
+  try{
+    const list=await fetch(`https://geo.api.gouv.fr/departements/${dep}/communes?fields=nom,code,population,codeRegion`).then(r=>r.json());
+    const c=list.sort((a,b)=>(b.population||0)-(a.population||0))[0];
+    return c?{nom:c.nom,code:c.code,dep,reg:c.codeRegion}:null;
+  }catch(e){return null;}
+}
+function setZoneProgress(txt){state.zoneProgress=txt;const el=$('#zoneOsmCount');if(el)el.innerHTML=osmCountText();}
+function addPartial(key,ids){
+  const cur=new Set(state.osmZonePartial[key]||[]); ids.forEach(i=>cur.add(i));
+  state.osmZonePartial[key]=[...cur]; renderOsm();
+}
+async function progressiveZone(z,key){
+  const stillHere=()=>state.zone&&state.zone.kind===z.kind&&state.zone.code===z.code;
+  if(z.kind==='departement'){
+    const city=await mainCityOf(z.code);
+    if(city){
+      setZoneProgress(`⏳ ${esc(city.nom)} d'abord…`);
+      try{await loadZoneOsm({kind:'ville',...city});addPartial(key,combinedIds('ville:'+city.code));}catch(e){}
+      if(stillHere())setZoneProgress(`⏳ ${esc(city.nom)} ✓ — reste du département…`);
+    }
+    return false; // on continue avec le département entier
+  }
+  if(z.kind==='region'){
+    // département par département : celui de l'utilisateur en premier
+    const deps=state.depts.filter(d=>d.region_code===z.code)
+      .sort((a,b)=>(b.code===state.userCommune?.dep)-(a.code===state.userCommune?.dep));
+    const done=[];
+    for(const d of deps){
+      if(!stillHere())return true;
+      setZoneProgress(`⏳ ${done.length}/${deps.length} départements · ${esc(d.nom)}…`);
+      try{await loadZoneOsm({kind:'departement',nom:d.nom,code:d.code,reg:d.region_code});
+          addPartial(key,combinedIds('departement:'+d.code));done.push(d.code);}catch(e){}
+    }
+    state.osmZoneIds[key]=state.osmZonePartial[key]||[];
+    setZoneProgress(null); renderOsm();
+    return true;
+  }
+  return false;
+}
+
+/* ---------- Médias d'un terrain ---------- */
+function hashtagOf(nom){
+  return (nom||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[·\-–'’]/g,' ')
+    .split(/\s+/).filter(Boolean).map(w=>w[0].toUpperCase()+w.slice(1).toLowerCase()).join('').replace(/[^A-Za-z0-9]/g,'');
+}
+function embedOf(url){
+  let m;
+  if((m=url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/)))return {p:'YouTube',src:`https://www.youtube.com/embed/${m[1]}`,h:220};
+  if((m=url.match(/tiktok\.com\/@[\w.-]+\/(?:video|photo)\/(\d+)/)))return {p:'TikTok',src:`https://www.tiktok.com/embed/v2/${m[1]}`,h:580};
+  if((m=url.match(/instagram\.com\/(?:[\w.]+\/)?(?:p|reel|reels|tv)\/([\w-]+)/)))return {p:'Instagram',src:`https://www.instagram.com/p/${m[1]}/embed`,h:560};
+  if((m=url.match(/(?:twitter|x)\.com\/\w+\/status\/(\d+)/)))return {p:'X',src:`https://platform.twitter.com/embed/Tweet.html?id=${m[1]}&theme=dark&dnt=true`,h:460};
+  if(/snapchat\.com/.test(url))return {p:'Snapchat',src:null};
+  if(/tiktok\.com/.test(url))return {p:'TikTok',src:null};
+  return {p:'Lien',src:null};
+}
+const PLATFORM_OK=/^https:\/\/([\w-]+\.)*(tiktok\.com|instagram\.com|x\.com|twitter\.com|youtube\.com|youtu\.be|snapchat\.com)\//i;
+async function renderMedias(t,body){
+  const [ph,ln]=await Promise.all([
+    sb.from('terrain_photos').select('id,url,user_id').eq('terrain_id',t.id).order('created_at',{ascending:false}),
+    sb.from('terrain_liens').select('id,url,user_id').eq('terrain_id',t.id).order('created_at',{ascending:false}),
+  ]);
+  if(ph.error)return fail(ph.error,'photos');
+  const photos=ph.data||[], liens=ln.data||[], tag=hashtagOf(t.nom), q=encodeURIComponent(`${t.nom} ${t.ville||''}`.trim());
+  const title=txt=>`<div style="font-weight:800;font-size:12.5px;color:var(--text-dim);letter-spacing:.3px;margin:18px 0 8px;">${txt}</div>`;
+  body.innerHTML=`<div class="section-pad">
+    ${title('📷 PHOTOS DES JOUEURS')}
+    <button class="pill active" style="width:100%;justify-content:center;margin-bottom:10px;${greenBtn}" onclick="addTerrainPhoto()">📷 Ajouter une photo</button>
+    <div class="thumbs">${photos.map(p=>`<div style="position:relative;"><img src="${esc(p.url)}" alt="" loading="lazy" onclick="window.open(this.src,'_blank')">
+      ${p.user_id===uid()?`<button onclick="deleteTerrainPhoto('${p.id}')" style="position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:none;background:rgba(0,0,0,.7);color:#fff;font-size:12px;">✕</button>`:''}</div>`).join('')}</div>
+    ${photos.length?'':'<div style="color:var(--text-faint);font-size:13px;">Pas encore de photo de joueur ici.</div>'}
+
+    ${title('🎬 VIDÉOS ET POSTS (TikTok, Instagram, X, YouTube, Snapchat)')}
+    <div style="display:flex;flex-direction:column;gap:10px;">${liens.map(l=>{const e=embedOf(l.url);return `<div class="card" style="padding:8px;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-faint);padding:2px 4px 6px;">
+        <span>${e.p}</span><span>${l.user_id===uid()?`<span style="cursor:pointer;" onclick="deleteLien('${l.id}')">🗑️</span>`:''}</span></div>
+      ${e.src?`<iframe src="${esc(e.src)}" loading="lazy" style="width:100%;height:${e.h}px;border:0;border-radius:10px;background:#000;" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`:''}
+      <a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" style="display:block;font-size:12.5px;color:var(--accent);padding:6px 4px 2px;text-decoration:none;">Ouvrir sur ${e.p} ↗</a>
+    </div>`;}).join('')||'<div style="color:var(--text-faint);font-size:13px;">Aucune vidéo pour l\'instant.</div>'}</div>
+    ${ln.error?'<div style="font-size:12px;color:var(--amber);margin-top:6px;">Lance la migration « terrain_liens » dans Supabase pour activer les vidéos.</div>':''}
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <input id="lienInput" placeholder="Colle le lien d'une vidéo ou d'un post" style="flex:1;${inputStyle}">
+      <button class="pill active" style="${greenBtn}" onclick="addLien()">Ajouter</button>
+    </div>
+    <div style="font-size:12px;color:var(--text-faint);margin:10px 0 6px;">Trouver des vidéos de ce terrain :</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      <a class="pill" style="font-size:12px;text-decoration:none;" target="_blank" rel="noopener" href="https://www.tiktok.com/search?q=${q}">TikTok</a>
+      <a class="pill" style="font-size:12px;text-decoration:none;" target="_blank" rel="noopener" href="https://www.instagram.com/explore/tags/${encodeURIComponent(tag.toLowerCase())}/">Instagram #${esc(tag)}</a>
+      <a class="pill" style="font-size:12px;text-decoration:none;" target="_blank" rel="noopener" href="https://x.com/search?q=${q}&f=media">X</a>
+      <a class="pill" style="font-size:12px;text-decoration:none;" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${q}">YouTube</a>
+      <a class="pill" style="font-size:12px;text-decoration:none;" target="_blank" rel="noopener" href="https://www.snapchat.com/explore/${encodeURIComponent(tag.toLowerCase())}">Snapchat</a>
+    </div>
+
+    ${title('🌍 PHOTOS LIBRES DE DROITS À PROXIMITÉ')}
+    <div id="commonsBox" style="font-size:13px;color:var(--text-faint);">⏳ Recherche sur Wikimedia Commons…</div>
+
+    <a class="pill" style="width:100%;justify-content:center;margin-top:16px;text-decoration:none;" target="_blank" rel="noopener"
+       href="https://www.google.com/maps/search/?api=1&query=${t.lat},${t.lng}">📍 Voir les photos et avis Google Maps ↗</a>
+  </div>`;
+  loadCommons(t);
+}
+async function loadCommons(t){
+  const box=$('#commonsBox'); if(!box)return;
+  try{
+    const url=`https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=geosearch&ggscoord=${t.lat}%7C${t.lng}&ggsradius=300&ggsnamespace=6&ggslimit=12&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=500`;
+    const pages=Object.values((await fetch(url).then(r=>r.json())).query?.pages||{}).filter(p=>p.imageinfo?.[0]?.thumburl);
+    const strip=h=>(h||'').replace(/<[^>]*>/g,'').trim();
+    if(!$('#commonsBox'))return;
+    $('#commonsBox').innerHTML=pages.length?`<div class="thumbs">${pages.map(p=>{const ii=p.imageinfo[0],md=ii.extmetadata||{};
+      const credit=`${strip(md.Artist?.value)||'Auteur inconnu'} · ${strip(md.LicenseShortName?.value)||'licence libre'}`;
+      return `<div><img src="${esc(ii.thumburl)}" alt="" loading="lazy" title="${esc(credit)}" onclick="window.open('${esc(ii.descriptionurl)}','_blank')">
+        <div style="font-size:10px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">${esc(credit)}</div></div>`;}).join('')}</div>
+      <div style="font-size:11px;color:var(--text-faint);margin-top:6px;">Photos sous licence libre prises à moins de 300 m (pas forcément du terrain lui-même). Touche une photo pour voir sa source.</div>`
+      :'Aucune photo libre de droits trouvée autour de ce terrain.';
+  }catch(e){const b=$('#commonsBox');if(b)b.textContent='Photos libres indisponibles pour le moment.';}
+}
+async function addLien(){
+  if(!needAuth())return;
+  const url=$('#lienInput').value.trim();
+  if(!PLATFORM_OK.test(url))return toast('Colle un lien TikTok, Instagram, X, YouTube ou Snapchat (https://…)');
+  const {error}=await sb.from('terrain_liens').insert({terrain_id:state.currentTerrain,user_id:uid(),url});
+  if(error)return fail(error,error.code==='23505'?'déjà ajouté':'lien');
+  toast('Vidéo ajoutée ✅'); renderTerrainSheet('photos');
+}
+async function deleteLien(id){
+  if(!confirm('Retirer cette vidéo ?'))return;
+  const {error}=await sb.from('terrain_liens').delete().eq('id',id);
+  if(error)return fail(error,'lien');
+  renderTerrainSheet('photos');
+}
+
+function voteRow(p,rank,count,voted){
+  return `<div class="card" style="margin:0 16px 8px;padding:11px 14px;display:flex;align-items:center;gap:10px;">
+    <div style="width:20px;text-align:center;font-weight:800;color:var(--text-faint);">${rank??''}</div>
+    <div class="avatar sm">🙂</div>
+    <div style="flex:1;"><div style="font-weight:700;font-size:14px;">${esc(p.pseudo)}</div><div style="font-size:12px;color:var(--text-faint);">@${esc(p.handle)}${count!=null?' · '+count+' vote'+(count>1?'s':''):''}</div></div>
+    ${p.id===uid()?'<span style="font-size:12px;color:var(--text-faint);">C\'est toi</span>':`<button class="pill ${voted?'active':''}" style="padding:6px 10px;font-size:12px;" onclick="toggleVote('${p.id}')">👍 ${voted?'Voté':'Voter'}</button>`}
+  </div>`;
+}
+async function searchVote(q){
+  const box=$('#voteResults'); if(!box)return;
+  if(q.trim().length<2){box.innerHTML='';return;}
+  const {data}=await sb.from('profiles').select('id,pseudo,handle').or(`pseudo.ilike.%${q.replace(/[%,()]/g,'')}%,handle.ilike.%${q.replace(/[%,()]/g,'')}%`).limit(8);
+  box.innerHTML='<div style="height:8px"></div>'+(data||[]).map(p=>voteRow(p,null,null,window._myVotes?.has(p.id))).join('').replaceAll('margin:0 16px 8px','margin:0 0 8px');
+}
+async function toggleVote(joueurId){if(!needAuth())return;
+  const t=state.currentTerrain;
+  const res=window._myVotes?.has(joueurId)
+    ? await sb.from('terrain_votes').delete().match({terrain_id:t,voter_id:uid(),joueur_id:joueurId})
+    : await sb.from('terrain_votes').insert({terrain_id:t,voter_id:uid(),joueur_id:joueurId});
+  if(res.error)return fail(res.error,'vote');
+  renderTerrainSheet('classement');
+}
+function drawStars(){
+  const el=$('#starPick'); if(!el)return;
+  el.innerHTML=[1,2,3,4,5].map(n=>`<span onclick="window._note=${n};drawStars()" style="color:${n<=window._note?'var(--gold)':'var(--text-faint)'}">★</span>`).join('');
+}
+async function saveAvis(){if(!needAuth())return;
+  if(!window._note)return toast('Choisis une note de 1 à 5 ⭐');
+  const {error}=await sb.from('terrain_avis').upsert({terrain_id:state.currentTerrain,user_id:uid(),note:window._note,texte:$('#avisText').value.trim()||null},{onConflict:'terrain_id,user_id'});
+  if(error)return fail(error,'avis');
+  toast('Avis enregistré ✅'); await loadTerrains(); renderTerrainSheet('avis');
+}
+function appendBubble(sel,mine,text,author,date){
+  const log=$(sel); if(!log)return; $('#chatEmpty')?.remove();
+  const b=document.createElement('div');
+  b.style.cssText=`align-self:${mine?'flex-end':'flex-start'};max-width:80%;`;
+  b.innerHTML=`${!mine&&author?`<div style="font-size:11px;color:var(--text-faint);margin:0 0 2px 4px;">${esc(author)}</div>`:''}
+    <div style="background:${mine?'var(--accent)':'var(--bg-card-2)'};color:${mine?'#08170d':'var(--text)'};padding:8px 12px;border-radius:${mine?'14px 14px 4px 14px':'14px 14px 14px 4px'};font-size:13.5px;">${esc(text)}</div>
+    <div style="font-size:10.5px;color:var(--text-faint);margin-top:2px;text-align:${mine?'right':'left'};">${hhmm(date)}</div>`;
+  log.appendChild(b); log.scrollTop=log.scrollHeight;
+}
+async function sendTerrainChat(){if(!needAuth())return;
+  const inp=$('#terrainChatInput'); const v=inp?.value.trim(); if(!v)return;
+  inp.value='';
+  const {error}=await sb.from('terrain_messages').insert({terrain_id:state.currentTerrain,author_id:uid(),texte:v});
+  if(error){inp.value=v;fail(error,'tchat');}
+}
+
+/* =========================================================
+   DÉBATS
+   ========================================================= */
+$all('#screen-debats .seg[data-feed]').forEach(s=>s.addEventListener('click',()=>{
+  state.feed=s.dataset.feed;
+  $all('#screen-debats .seg[data-feed]').forEach(x=>x.classList.toggle('active',x===s));
+  renderFeed();
+}));
+$('#feedSearch').addEventListener('input',e=>{state.feedQuery=e.target.value.trim().toLowerCase();renderFeed();});
+async function loadFeed(){
+  const [feed,likes,reposts]=await Promise.all([
+    sb.from('posts_feed').select('*').limit(150),
+    uid()?sb.from('post_likes').select('post_id').eq('user_id',uid()):Promise.resolve({data:[]}),
+    uid()?sb.from('post_reposts').select('post_id').eq('user_id',uid()):Promise.resolve({data:[]}),
+  ]);
+  if(feed.error)return fail(feed.error,'fil');
+  state.posts=feed.data;
+  state.myLikes=new Set((likes.data||[]).map(x=>x.post_id));
+  state.myReposts=new Set((reposts.data||[]).map(x=>x.post_id));
+  renderTrends(); renderFeed();
+}
+const TAG_RE=/#[\p{L}\p{N}_]{2,40}/gu;
+function renderTrends(){
+  // Tendances calculées à partir des vrais posts des 7 derniers jours
+  const since=Date.now()-7*864e5, counts={};
+  state.posts.filter(p=>new Date(p.created_at)>since).forEach(p=>{
+    new Set((p.texte.match(TAG_RE)||[]).map(h=>h.toLowerCase())).forEach(h=>counts[h]=(counts[h]||0)+1);
+  });
+  const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8), box=$('#trends');
+  if(!top.length){box.style.display='none';return;}
+  box.style.display='flex';
+  box.innerHTML='<span style="flex-shrink:0;">📈 Tendances</span>'+top.map(([h,n])=>
+    `<span class="pill ${state.feedTag===h?'active':''}" style="padding:5px 10px;font-size:12px;" onclick="filterTag('${h}')">${esc(h)}${n>1?' · '+n:''}</span>`).join('');
+}
+function filterTag(h){state.feedTag=state.feedTag===h?null:h;renderTrends();renderFeed();}
+function richText(t){return esc(t).replace(TAG_RE,h=>`<span style="color:var(--accent);cursor:pointer;" onclick="event.stopPropagation();filterTag('${h.toLowerCase()}')">${h}</span>`);}
+function renderFeed(){setTimeout(()=>injectAds('#feedList','fil',8),0);
+  const q=state.feedQuery||'', tag=state.feedTag;
+  const list=state.posts.filter(p=>
+    (state.feed==='tout'||(state.feed==='debats'&&p.type==='debat')||(state.feed==='clips'&&p.type==='clip'))
+    &&(!q||[p.texte,p.pseudo,p.handle,p.terrain_nom].join(' ').toLowerCase().includes(q))
+    &&(!tag||p.texte.toLowerCase().includes(tag)));
+  const banner=tag?`<div class="card" style="padding:10px 14px;display:flex;align-items:center;font-size:13.5px;">Filtre : <b style="margin-left:6px;color:var(--accent);">${esc(tag)}</b><span style="margin-left:auto;cursor:pointer;color:var(--text-faint);" onclick="filterTag('${tag}')">✕</span></div>`:'';
+  $('#feedList').innerHTML=banner+(list.map(p=>{
+    const liked=state.myLikes.has(p.id), rep=state.myReposts.has(p.id), debat=p.type==='debat', mine=p.author_id===uid();
+    return `<div class="card" style="padding:14px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        ${avatarHtml(p.avatar_url,'sm',`border-color:${debat?'var(--amber)':'var(--accent)'};`)}
+        <div style="flex:1;min-width:0;font-weight:700;font-size:14px;">${esc(p.pseudo)} <span style="color:var(--text-faint);font-weight:500;">@${esc(p.handle)} · ${ago(p.created_at)}</span></div>
+        ${debat?'<span class="pill" style="background:var(--amber);color:#2b1a00;border:none;padding:4px 9px;font-size:11px;">DÉBAT</span>':'<span class="pill" style="background:var(--red);color:#fff;border:none;padding:4px 9px;font-size:11px;">CLIP</span>'}
+      </div>
+      <div style="margin-top:10px;font-size:14.5px;line-height:1.4;white-space:pre-wrap;word-break:break-word;">${richText(p.texte)}</div>
+      ${p.terrain_nom?`<div style="margin-top:6px;font-size:12.5px;color:var(--accent);">📍 ${esc(p.terrain_nom)}</div>`:''}
+      ${mediaHtml(p)}
+      <div style="display:flex;align-items:center;gap:18px;margin-top:12px;color:var(--text-dim);font-size:13px;">
+        <span style="cursor:pointer;" onclick="toggleLike('${p.id}')">${liked?'❤️':'🤍'} ${p.nb_likes}</span>
+        <span style="cursor:pointer;" onclick="openComments('${p.id}')">💬 ${p.nb_comments}</span>
+        <span style="cursor:pointer;color:${rep?'var(--accent)':'var(--text-dim)'};" onclick="toggleRepost('${p.id}')">🔁 ${p.nb_reposts}</span>
+        ${mine?`<span style="cursor:pointer;" onclick="openEditPost('${p.id}')">✏️</span><span style="cursor:pointer;" onclick="deletePost('${p.id}')">🗑️</span>`:''}
+        <span style="cursor:pointer;margin-left:auto;color:var(--text-faint);" title="Signaler" onclick="signaler('post','${p.id}')">⚑</span>
+        <span style="cursor:pointer;" onclick="openShare('${p.id}')">↗️</span>
+      </div>
+    </div>`;}).join('')||`<div style="color:var(--text-faint);text-align:center;padding:30px 0;">${q||tag?'Aucun résultat.':'Aucun post pour l\'instant. Lance le premier débat avec le bouton ＋'}</div>`);
+}
+async function toggleLike(id){if(!needAuth())return;
+  const p=state.posts.find(x=>x.id===id), on=state.myLikes.has(id);
+  const res=on?await sb.from('post_likes').delete().match({post_id:id,user_id:uid()}):await sb.from('post_likes').insert({post_id:id,user_id:uid()});
+  if(res.error)return fail(res.error,'like');
+  on?state.myLikes.delete(id):state.myLikes.add(id); p.nb_likes+=on?-1:1; renderFeed();
+}
+async function toggleRepost(id){if(!needAuth())return;
+  const p=state.posts.find(x=>x.id===id), on=state.myReposts.has(id);
+  const res=on?await sb.from('post_reposts').delete().match({post_id:id,user_id:uid()}):await sb.from('post_reposts').insert({post_id:id,user_id:uid()});
+  if(res.error)return fail(res.error,'repost');
+  on?state.myReposts.delete(id):state.myReposts.add(id); p.nb_reposts+=on?-1:1; renderFeed();
+  if(!on)toast('Repost ✅');
+}
+async function deletePost(id){if(!needAuth())return;
+  if(!confirm('Supprimer ce post ?'))return;
+  const {error}=await sb.from('posts').delete().eq('id',id);
+  if(error)return fail(error,'suppression');
+  state.posts=state.posts.filter(p=>p.id!==id); renderTrends(); renderFeed();
+}
+function openEditPost(id){if(!needAuth())return;
+  const p=state.posts.find(x=>x.id===id); if(!p)return;
+  const hasMedia=p.image_url||p.video_url;
+  window._editFile=null;
+  openSheet('sheetCompose',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:800;font-size:16px;">Modifier le post</div>${closeBtn}</div>
+    <div class="section-pad sheet-body">
+      <textarea id="editText" rows="4" maxlength="2000" style="${inputStyle}margin-top:10px;">${esc(p.texte)}</textarea>
+      <div id="editMediaBox" style="margin-top:4px;">${mediaHtml(p)}</div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="pill" style="flex:1;justify-content:center;" onclick="pickEditMedia()">📷 ${hasMedia?'Changer':'Ajouter'} photo/vidéo</button>
+        ${hasMedia?`<button class="pill" style="flex:1;justify-content:center;" onclick="removeEditMedia()">🗑️ Retirer le média</button>`:''}
+      </div>
+      <button id="editSave" class="pill active" style="width:100%;justify-content:center;margin-top:12px;${greenBtn}" onclick="saveEditPost('${p.id}')">Enregistrer</button>
+    </div>`);
+}
+function removeEditMedia(){
+  window._editFile='remove';
+  $('#editMediaBox').innerHTML='<div style="font-size:12.5px;color:var(--text-faint);margin-top:8px;">Média retiré (sera supprimé à l\'enregistrement)</div>';
+}
+async function pickEditMedia(){
+  const f=await pickFile('image/*,video/*'); if(!f)return;
+  window._editFile=f;
+  $('#editMediaBox').innerHTML=mediaHtml(f.type.startsWith('video/')?{video_url:URL.createObjectURL(f)}:{image_url:URL.createObjectURL(f)});
+}
+async function saveEditPost(id){
+  const texte=$('#editText').value.trim(); if(!texte)return toast('Le texte ne peut pas être vide');
+  const upd={texte}, btn=$('#editSave'); btn.disabled=true; btn.textContent='Enregistrement…';
+  try{
+    if(window._editFile==='remove'){upd.image_url=null;upd.video_url=null;}
+    else if(window._editFile){
+      const url=await uploadMedia(window._editFile,'posts');
+      if(window._editFile.type.startsWith('video/')){upd.video_url=url;upd.image_url=null;}else{upd.image_url=url;upd.video_url=null;}
+    }
+    const {error}=await sb.from('posts').update(upd).eq('id',id);
+    if(error)throw error;
+    closeSheets(); toast('Post modifié ✅'); loadFeed();
+  }catch(e){fail(e,'modification');btn.disabled=false;btn.textContent='Enregistrer';}
+}
+async function openComments(id){
+  state.currentPost=id;
+  const {data,error}=await sb.from('comments').select('id,texte,created_at,profiles(pseudo,handle,avatar_url)').eq('post_id',id).order('created_at');
+  if(error)return fail(error,'commentaires');
+  openSheet('sheetComments',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-weight:800;font-size:16px;">Commentaires · ${data.length}</div>${closeBtn}
+    </div>
+    <div class="sheet-body section-pad" style="display:flex;flex-direction:column;gap:12px;margin-top:10px;">
+      ${data.map(c=>`<div style="display:flex;gap:10px;">${avatarHtml(c.profiles?.avatar_url)}<div>
+        <div style="font-size:13px;font-weight:700;">${esc(c.profiles?.pseudo)} <span style="color:var(--text-faint);font-weight:500;">@${esc(c.profiles?.handle)} · ${ago(c.created_at)}</span></div>
+        <div style="font-size:13.5px;margin-top:2px;white-space:pre-wrap;">${richText(c.texte)}</div></div></div>`).join('')||'<div style="color:var(--text-faint);">Sois le premier à commenter.</div>'}
+    </div>
+    <div style="display:flex;gap:8px;padding:12px 16px 4px;border-top:1px solid var(--border);">
+      <input id="commentInput" maxlength="1000" placeholder="Ajoute ton grain de sel…" style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:10px 14px;font-size:13.5px;" onkeydown="if(event.key==='Enter')sendComment()">
+      <button class="pill active" style="${greenBtn}" onclick="sendComment()">➤</button>
+    </div>`);
+}
+async function sendComment(){if(!needAuth())return;
+  const v=$('#commentInput')?.value.trim(); if(!v)return;
+  const {error}=await sb.from('comments').insert({post_id:state.currentPost,author_id:uid(),texte:v});
+  if(error)return fail(error,'commentaire');
+  const p=state.posts.find(x=>x.id===state.currentPost); if(p)p.nb_comments++;
+  renderFeed(); openComments(state.currentPost);
+}
+function openShare(id){
+  const link=location.href.split('#')[0]+'#post-'+id;
+  openSheet('sheetShare',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="font-weight:800;font-size:16px;">Partager</div>
+    <div class="section-pad sheet-body" style="margin-top:8px;">
+      <div class="card" style="padding:14px;margin-bottom:8px;" onclick="navigator.clipboard?.writeText('${link}').then(()=>toast('Lien copié ✅'),()=>toast('Copie impossible ici'));closeSheets();">🔗 Copier le lien</div>
+      <div class="card" style="padding:14px;margin-bottom:8px;" onclick="if(navigator.share){navigator.share({title:'FootZone',url:'${link}'}).catch(()=>{})}else{toast('Partage non disponible ici')};closeSheets();">📤 Partager via…</div>
+    </div>`);
+}
+function composeTerrainOptions(){
+  const b=map?map.getBounds():null;
+  return state.terrains.filter(t=>!b||b.contains([t.lat,t.lng])).sort((a,c)=>a.nom.localeCompare(c.nom,'fr')).slice(0,150)
+    .map(t=>`<option value="${t.id}">${esc(t.nom)}${t.ville?' · '+esc(t.ville):''}</option>`).join('');
+}
+function setComposeType(t){
+  window._ctype=t;
+  $('#cType-debat').classList.toggle('active',t==='debat');
+  $('#cType-clip').classList.toggle('active',t==='clip');
+}
+function openCompose(prefill=''){if(!needAuth())return;
+  window._cfile=null;
+  openSheet('sheetCompose',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-weight:800;font-size:16px;">Nouveau post</div>${closeBtn}
+    </div>
+    <div class="section-pad sheet-body">
+      <div class="segrow" style="padding:10px 0 0;">
+        <div class="seg active" id="cType-debat" onclick="setComposeType('debat')">🔥 Débat</div>
+        <div class="seg" id="cType-clip" onclick="setComposeType('clip')">🎬 Clip</div>
+      </div>
+      <textarea id="composeText" rows="4" maxlength="2000" placeholder="Un débat, un coup de gueule, une action de folie… Ajoute des #hashtags !" style="${inputStyle}margin-top:10px;"></textarea>
+      <div id="composeMedia"></div>
+      <button class="pill" style="width:100%;justify-content:center;margin-top:10px;" onclick="pickComposeMedia()">📷 Ajouter une photo ou une vidéo</button>
+      <select id="composeTerrain" style="${inputStyle}margin-top:10px;color:var(--text);">
+        <option value="">📍 Aucun terrain</option>
+        ${composeTerrainOptions()}
+      </select>
+      <button id="composeBtn" class="pill active" style="width:100%;justify-content:center;margin-top:12px;${greenBtn}" onclick="publishPost()">Publier</button>
+    </div>`);
+  window._ctype='debat';
+  if(prefill)$('#composeText').value=prefill;
+}
+function clearComposeMedia(){window._cfile=null;$('#composeMedia').innerHTML='';}
+async function pickComposeMedia(){
+  const f=await pickFile('image/*,video/*'); if(!f)return;
+  window._cfile=f;
+  const isVideo=f.type.startsWith('video/');
+  if(isVideo)setComposeType('clip');
+  $('#composeMedia').innerHTML=mediaHtml(isVideo?{video_url:URL.createObjectURL(f)}:{image_url:URL.createObjectURL(f)})
+    +'<div style="text-align:right;margin-top:4px;"><span style="font-size:12.5px;color:var(--text-faint);cursor:pointer;" onclick="clearComposeMedia()">✕ Retirer</span></div>';
+}
+async function publishPost(){if(!needAuth())return;
+  const texte=$('#composeText').value.trim(); if(!texte)return toast('Écris quelque chose 🙂');
+  const btn=$('#composeBtn'); btn.disabled=true; btn.textContent=window._cfile?'Envoi du média…':'Publication…';
+  try{
+    const row={author_id:uid(),type:window._ctype,texte,terrain_id:$('#composeTerrain').value||null};
+    if(window._cfile){
+      const url=await uploadMedia(window._cfile,'posts');
+      if(window._cfile.type.startsWith('video/'))row.video_url=url; else row.image_url=url;
+    }
+    const {error}=await sb.from('posts').insert(row);
+    if(error)throw error;
+    closeSheets(); toast('Publié ✅'); loadFeed();
+  }catch(e){fail(e,'publication');btn.disabled=false;btn.textContent='Publier';}
+}
+
+/* =========================================================
+   ACTU FOOT (flux de sites de presse, stockés par Supabase)
+   ========================================================= */
+state.actuSource=null; state.actus=[]; state.actuSrc=[]; state.actusShown=[];
+async function loadActu(){
+  const [a,src]=await Promise.all([
+    sb.from('actus').select('*').order('publie_le',{ascending:false}).limit(150),
+    sb.from('actu_sources').select('nom,actif,dernier_essai,dernier_statut').order('id'),
+  ]);
+  if(a.error){
+    $('#actuList').innerHTML='<div class="card" style="padding:14px;font-size:13.5px;color:var(--text-dim);">La presse-actu n\'est pas encore installée : lance <b>footzone_migration_03.sql</b> dans Supabase.</div>';
+    return;
+  }
+  state.actus=a.data; state.actuSrc=src.data||[];
+  const last=state.actuSrc.map(x=>x.dernier_essai).filter(Boolean).sort().pop();
+  $('#actuMaj').textContent=last?'Mis à jour '+ago(last):'';
+  renderActu();
+}
+function setActuSource(i){
+  const names=[...new Set(state.actus.map(a=>a.source))];
+  state.actuSource=(i===null||names[i]===state.actuSource)?null:names[i];
+  renderActu();
+}
+function debattreActu(i){const a=state.actusShown[i];if(a)openCompose(`${a.titre}\n${a.lien}\n\nVous en pensez quoi ? #Actu`);}
+function renderActu(){setTimeout(()=>injectAds('#actuList','actu',6),0);
+  const names=[...new Set(state.actus.map(a=>a.source))];
+  $('#actuSources').innerHTML=`<div class="pill ${!state.actuSource?'active':''}" onclick="setActuSource(null)">Toutes</div>`
+    +names.map((n,i)=>`<div class="pill ${state.actuSource===n?'active':''}" onclick="setActuSource(${i})">${esc(n)}</div>`).join('');
+  const list=state.actus.filter(a=>!state.actuSource||a.source===state.actuSource);
+  state.actusShown=list;
+  const errors=state.actuSrc.filter(s=>s.actif&&s.dernier_statut&&s.dernier_statut.startsWith('Erreur'));
+  $('#actuList').innerHTML=(list.map((a,i)=>`<div class="card" style="padding:12px;display:flex;gap:12px;">
+      ${a.image&&/^https?:/.test(a.image)?`<img src="${esc(a.image)}" alt="" loading="lazy" referrerpolicy="no-referrer" style="width:88px;height:88px;object-fit:cover;border-radius:10px;flex-shrink:0;background:var(--bg-card-2);" onerror="this.remove()">`:''}
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
+        <a href="${esc(a.lien)}" target="_blank" rel="noopener noreferrer" style="color:var(--text);text-decoration:none;font-weight:700;font-size:14px;line-height:1.35;">${esc(a.titre)}</a>
+        <div style="font-size:12px;color:var(--text-faint);margin-top:4px;">${esc(a.source)} · ${ago(a.publie_le)}</div>
+        <div style="display:flex;gap:14px;margin-top:auto;padding-top:8px;font-size:12.5px;">
+          <a href="${esc(a.lien)}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:none;">Lire l'article ↗</a>
+          <span style="color:var(--text-dim);cursor:pointer;" onclick="debattreActu(${i})">💬 En débattre</span>
+        </div>
+      </div>
+    </div>`).join('')
+    ||'<div style="color:var(--text-faint);text-align:center;padding:30px 0;">Aucun article pour l\'instant. Les actus se mettent à jour toutes les 30 minutes.</div>')
+    +(errors.length?`<div style="font-size:11.5px;color:var(--text-faint);padding:6px 2px;">Sources en erreur : ${errors.map(e=>esc(e.nom)).join(', ')} (détail dans la table actu_sources sur Supabase)</div>`:'');
+}
+
+/* =========================================================
+   CLASSEMENTS
+   ========================================================= */
+$all('#screen-classements .seg[data-rank]').forEach(s=>s.addEventListener('click',()=>{
+  state.rankTab=s.dataset.rank;
+  $all('#screen-classements .seg[data-rank]').forEach(x=>x.classList.toggle('active',x===s));
+  renderRanking();
+}));
+$all('#screen-classements .pill[data-scale]').forEach(p=>p.addEventListener('click',async()=>{
+  state.rankScale=p.dataset.scale; state.rankZoneVal=null;
+  $all('#screen-classements .pill[data-scale]').forEach(x=>x.classList.toggle('active',x===p));
+  await fillRankZone(); renderRanking();
+}));
+$('#rankZone').addEventListener('change',e=>{state.rankZoneVal=e.target.value||null;renderRanking();});
+async function fillRankZone(){
+  const sel=$('#rankZone'), s=state.rankScale, me=state.profile||{};
+  if(s==='national'){sel.style.display='none';return;}
+  let opts=[], def=null;
+  if(s==='region'){opts=regionsList().sort((a,b)=>a.nom.localeCompare(b.nom,'fr')).map(r=>[r.code,r.nom]);def=me.region;}
+  if(s==='departement'){opts=state.depts.map(d=>[d.code,`${d.code} · ${d.nom}`]);def=me.departement;}
+  if(s==='ville'){
+    const {data}=await sb.from('profiles').select('ville').not('ville','is',null).limit(2000);
+    opts=[...new Set((data||[]).map(x=>x.ville))].sort((a,b)=>a.localeCompare(b,'fr')).map(v=>[v,v]); def=me.ville;
+  }
+  if(s==='terrain'){
+    const {data:v}=await sb.from('terrain_votes').select('terrain_id').limit(5000);
+    const ids=[...new Set((v||[]).map(x=>x.terrain_id))];
+    let ts=[]; if(ids.length){const r=await sb.from('terrains').select('id,nom,ville').in('id',ids.slice(0,300));ts=r.data||[];}
+    opts=ts.sort((a,b)=>a.nom.localeCompare(b.nom,'fr')).map(t=>[t.id,t.nom+(t.ville?` (${t.ville})`:'')]);
+  }
+  sel.innerHTML=opts.length?opts.map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('')
+    :`<option value="">${s==='terrain'?'Aucun terrain n\'a encore reçu de votes':'Aucune donnée pour l\'instant'}</option>`;
+  state.rankZoneVal=opts.some(o=>o[0]===def)?def:(opts[0]?.[0]||null);
+  if(state.rankZoneVal)sel.value=state.rankZoneVal;
+  sel.style.display='block';
+}
+async function renderRanking(){
+  let rows=[]; const s=state.rankScale, zv=state.rankZoneVal;
+  const col={region:'region',departement:'departement',ville:'ville'}[s];
+  if(s!=='national'&&!zv){
+    rows=[];
+  }else if(s==='terrain'&&state.rankTab!=='clips'){
+    // Classement d'un terrain = votes reçus par les joueurs sur ce terrain
+    const {data:votes,error}=await sb.from('terrain_votes').select('joueur_id').eq('terrain_id',zv);
+    if(error)return fail(error,'classement');
+    const counts={}; votes.forEach(v=>counts[v.joueur_id]=(counts[v.joueur_id]||0)+1);
+    const ids=Object.keys(counts);
+    if(ids.length){
+      const {data}=await sb.from('profiles').select('id,pseudo,handle,avatar_url,poste').in('id',ids);
+      rows=(data||[]).sort((a,b)=>counts[b.id]-counts[a.id]).map(p=>({a:p.avatar_url,n:p.pseudo,v:'@'+p.handle,role:p.poste,val:counts[p.id]+' vote'+(counts[p.id]>1?'s':'')}));
+    }
+  }else if(state.rankTab==='clips'){
+    let q=sb.from('posts_feed').select('pseudo,handle,avatar_url,nb_likes,texte').eq('type','clip');
+    if(s==='terrain')q=q.eq('terrain_id',zv); else if(col)q=q.eq('auteur_'+col,zv);
+    const {data,error}=await q.order('nb_likes',{ascending:false}).limit(20);
+    if(error)return fail(error,'classement');
+    rows=data.map(c=>({a:c.avatar_url,n:c.pseudo,v:'@'+c.handle,role:c.texte.slice(0,30)+(c.texte.length>30?'…':''),val:c.nb_likes+' likes'}));
+  }else{
+    const sortCol=state.rankTab==='buteurs'?'buts':'points';
+    let q=sb.from('profiles').select('pseudo,handle,avatar_url,poste,points,buts,ville').order(sortCol,{ascending:false}).limit(20);
+    if(col)q=q.eq(col,zv);
+    const {data,error}=await q;
+    if(error)return fail(error,'classement');
+    rows=data.map(p=>({a:p.avatar_url,n:p.pseudo,v:'@'+p.handle,role:p.poste,val:(sortCol==='buts'?p.buts+' buts':p.points+' pts')}));
+  }
+  const top3=rows.slice(0,3), rest=rows.slice(3);
+  const medal=['var(--gold)','var(--silver)','var(--bronze)'];
+  $('#podium').innerHTML=rows.length?`<div style="display:flex;align-items:flex-end;justify-content:center;gap:14px;padding:10px 0 4px;">
+    ${[1,0,2].filter(i=>top3[i]).map(i=>`<div style="text-align:center;max-width:110px;">
+      <div style="position:relative;display:inline-block;">
+        ${avatarHtml(top3[i].a,i===0?'lg':'',`border-color:${medal[i]};${i===0?'':'width:60px;height:60px;font-size:24px;'}`)}
+        <div style="position:absolute;top:-8px;${i===0?'right:-4px':'left:-4px'};background:${medal[i]};color:#1a1a1a;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;">${i+1}</div>
+      </div>
+      <div style="font-weight:800;font-size:${i===0?'15px':'13px'};margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(top3[i].n)}</div>
+      <span class="pill" style="background:${medal[i]};color:#1a1a1a;border:none;padding:3px 10px;font-size:11.5px;font-weight:800;margin-top:4px;display:inline-block;">${esc(top3[i].val)}</span>
+    </div>`).join('')}</div>`:'<div style="text-align:center;color:var(--text-faint);padding:30px 0;">Pas encore de classement.</div>';
+  $('#rankList').innerHTML=rest.map((r,i)=>`<div class="card" style="padding:11px 14px;display:flex;align-items:center;gap:12px;">
+    <div style="width:18px;text-align:center;color:var(--text-faint);font-weight:700;">${i+4}</div>
+    ${avatarHtml(r.a)}
+    <div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;">${esc(r.n)}</div><div style="font-size:12px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(r.v)}${r.role?' · '+esc(r.role):''}</div></div>
+    <span class="pill" style="padding:5px 10px;font-size:12px;background:var(--bg-card-2);">${esc(r.val)}</span>
+  </div>`).join('');
+}
+
+/* =========================================================
+   MESSAGERIE
+   ========================================================= */
+async function loadConvos(){
+  const {data:mine,error}=await sb.from('conversation_members').select('conversation_id').eq('user_id',uid());
+  if(error)return fail(error,'messages');
+  const ids=mine.map(m=>m.conversation_id);
+  if(!ids.length){state.convos=[];return renderConvos();}
+  const [convs,members,msgs]=await Promise.all([
+    sb.from('conversations').select('*').in('id',ids),
+    sb.from('conversation_members').select('conversation_id,user_id,profiles(pseudo,handle,avatar_url)').in('conversation_id',ids),
+    sb.from('messages').select('conversation_id,texte,created_at').in('conversation_id',ids).order('created_at',{ascending:false}).limit(300),
+  ]);
+  if(convs.error)return fail(convs.error,'messages');
+  state.convos=convs.data.map(c=>{
+    const mem=(members.data||[]).filter(m=>m.conversation_id===c.id);
+    const other=mem.find(m=>m.user_id!==uid());
+    const last=(msgs.data||[]).find(m=>m.conversation_id===c.id);
+    return {...c,members:mem.length,title:c.is_group?c.nom:(other?.profiles?.pseudo||'Conversation'),
+      sub:c.is_group?null:'@'+(other?.profiles?.handle||''),avatar:other?.profiles?.avatar_url,last:last?.texte||'Nouvelle conversation',lastAt:last?.created_at||c.created_at};
+  }).sort((a,b)=>new Date(b.lastAt)-new Date(a.lastAt));
+  renderConvos();
+}
+function renderConvos(){
+  $('#convosList').innerHTML=state.convos.map(c=>`
+    <div class="card" style="padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:6px;cursor:pointer;" onclick="openConvo('${c.id}')">
+      ${c.is_group?'<div class="avatar">👥</div>':avatarHtml(c.avatar,'')}
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;gap:8px;"><span style="font-weight:700;font-size:14px;">${esc(c.title)}</span><span style="font-size:11.5px;color:var(--text-faint);flex-shrink:0;">${ago(c.lastAt)}</span></div>
+        <div style="font-size:13px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(c.last)}</div>
+      </div>
+    </div>`).join('')||'<div style="color:var(--text-faint);text-align:center;padding:30px 0;">Aucune conversation. Appuie sur ＋ pour écrire à un joueur ou rejoindre un groupe.</div>';
+}
+async function openConvo(id){
+  const c=state.convos.find(x=>x.id===id); if(!c)return;
+  const {data,error}=await sb.from('messages').select('id,texte,created_at,author_id,profiles(pseudo)').eq('conversation_id',id).order('created_at').limit(200);
+  if(error)return fail(error,'conversation');
+  openSheet('sheetConvo',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;align-items:center;gap:10px;">
+      <div class="avatar sm">${c.is_group?'👥':'🙂'}</div>
+      <div style="flex:1;"><div style="font-weight:800;font-size:15px;">${esc(c.title)}</div><div style="font-size:12px;color:var(--text-faint);">${c.is_group?c.members+' membres':esc(c.sub)}</div></div>
+      ${c.is_group?`<button class="pill" style="padding:6px 10px;font-size:12px;" onclick="leaveConvo('${c.id}')">Quitter</button>`:''}
+      ${closeBtn}
+    </div>
+    <div class="sheet-body section-pad" id="convoLog" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;min-height:220px;max-height:50vh;overflow-y:auto;"></div>
+    <div style="display:flex;gap:8px;padding:10px 16px 4px;border-top:1px solid var(--border);">
+      <input id="convoInput" maxlength="2000" placeholder="Écrire un message…" style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:10px 14px;font-size:13.5px;" onkeydown="if(event.key==='Enter')sendConvoMsg()">
+      <button class="pill active" style="${greenBtn}" onclick="sendConvoMsg()">➤</button>
+    </div>`);
+  state.currentConvo=id;
+  data.forEach(m=>appendBubble('#convoLog',m.author_id===uid(),m.texte,c.is_group?m.profiles?.pseudo:null,m.created_at));
+}
+async function sendConvoMsg(){if(!needAuth())return;
+  const inp=$('#convoInput'); const v=inp?.value.trim(); if(!v)return;
+  inp.value='';
+  const {error}=await sb.from('messages').insert({conversation_id:state.currentConvo,author_id:uid(),texte:v});
+  if(error){inp.value=v;fail(error,'message');}
+}
+async function leaveConvo(id){
+  if(!confirm('Quitter ce groupe ?'))return;
+  const {error}=await sb.from('conversation_members').delete().match({conversation_id:id,user_id:uid()});
+  if(error)return fail(error,'quitter');
+  closeSheets(); loadConvos();
+}
+function subscribeMessages(){
+  if(state.msgChannel)sb.removeChannel(state.msgChannel);
+  state.msgChannel=sb.channel('mes-messages')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},async payload=>{
+      const m=payload.new;
+      if(state.currentConvo===m.conversation_id){
+        const c=state.convos.find(x=>x.id===m.conversation_id);
+        let pseudo=null;
+        if(c?.is_group&&m.author_id!==uid()){const r=await sb.from('profiles').select('pseudo').eq('id',m.author_id).maybeSingle();pseudo=r.data?.pseudo;}
+        appendBubble('#convoLog',m.author_id===uid(),m.texte,pseudo,m.created_at);
+      }else if(m.author_id!==uid()){toast('💬 Nouveau message');}
+      const c=state.convos.find(x=>x.id===m.conversation_id);
+      if(c){c.last=m.texte;c.lastAt=m.created_at;state.convos.sort((a,b)=>new Date(b.lastAt)-new Date(a.lastAt));renderConvos();}
+      else loadConvos();
+    }).subscribe();
+}
+$('#btnNewMsg').addEventListener('click',openNewMsg);
+function openNewMsg(){if(!needAuth())return;
+  openSheet('sheetNewMsg',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:800;font-size:16px;">Nouvelle conversation</div>${closeBtn}</div>
+    <div class="sheet-body section-pad" style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+      <div class="card" style="padding:14px;cursor:pointer;" onclick="newMsgStep('search')">💬 Nouveau message <span style="color:var(--text-faint);font-weight:500;">— écrire à un joueur</span></div>
+      <div class="card" style="padding:14px;cursor:pointer;" onclick="newMsgStep('create')">➕ Créer un groupe</div>
+      <div class="card" style="padding:14px;cursor:pointer;" onclick="newMsgStep('join')">🔎 Rejoindre un groupe</div>
+      <div id="newMsgSub" style="margin-top:6px;"></div>
+    </div>`);
+}
+async function searchPlayers(q){
+  const clean=q.replace(/[%,()]/g,'').trim();
+  let req=sb.from('profiles').select('id,pseudo,handle').neq('id',uid()).limit(15);
+  if(clean.length)req=req.or(`pseudo.ilike.%${clean}%,handle.ilike.%${clean}%`);
+  const {data}=await req; return data||[];
+}
+async function newMsgStep(mode){
+  const sub=$('#newMsgSub');
+  if(mode==='search'){
+    sub.innerHTML=`<input id="dmSearch" placeholder="Rechercher un joueur…" style="${inputStyle}"><div id="dmResults"></div>`;
+    const draw=async()=>{const ps=await searchPlayers($('#dmSearch').value);
+      $('#dmResults').innerHTML=ps.map(p=>`<div class="card" style="padding:11px 14px;margin-top:8px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="startDM('${p.id}')"><div class="avatar sm">🙂</div><div style="font-weight:700;font-size:14px;">${esc(p.pseudo)} <span style="color:var(--text-faint);font-weight:500;">@${esc(p.handle)}</span></div></div>`).join('')||'<div style="color:var(--text-faint);font-size:13px;margin-top:10px;">Aucun joueur trouvé.</div>';};
+    $('#dmSearch').oninput=draw; draw();
+  }else if(mode==='create'){
+    const ps=await searchPlayers('');
+    sub.innerHTML=`<input id="grpName" maxlength="60" placeholder="Nom du groupe" style="${inputStyle}">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;margin:10px 0;"><input type="checkbox" id="grpPublic" checked> Groupe public (tout le monde peut le rejoindre)</label>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:6px;">Ajouter des joueurs</div>
+      ${ps.map(p=>`<label class="card" style="padding:11px 14px;margin-top:6px;display:flex;align-items:center;gap:10px;"><input type="checkbox" class="grpPick" value="${p.id}"><div class="avatar sm">🙂</div><div style="font-weight:700;font-size:14px;">${esc(p.pseudo)}</div></label>`).join('')||'<div style="color:var(--text-faint);font-size:13px;">Aucun autre joueur inscrit pour l\'instant.</div>'}
+      <button class="pill active" style="width:100%;justify-content:center;margin-top:12px;${greenBtn}" onclick="createGroup()">Créer le groupe</button>`;
+  }else{
+    const [pub,mine]=await Promise.all([
+      sb.from('conversations').select('id,nom').eq('is_group',true).eq('is_public',true).order('created_at',{ascending:false}).limit(30),
+      sb.from('conversation_members').select('conversation_id').eq('user_id',uid()),
+    ]);
+    const joined=new Set((mine.data||[]).map(m=>m.conversation_id));
+    sub.innerHTML=(pub.data||[]).map(g=>`<div class="card" style="padding:12px 14px;margin-top:8px;display:flex;align-items:center;gap:10px;">
+      <div class="avatar sm">👥</div><div style="flex:1;font-weight:700;font-size:14px;">${esc(g.nom)}</div>
+      ${joined.has(g.id)?'<span class="pill" style="opacity:.5;">Membre</span>':`<button class="pill" onclick="joinGroup('${g.id}')">Rejoindre</button>`}
+    </div>`).join('')||'<div style="color:var(--text-faint);font-size:13px;">Aucun groupe public pour l\'instant. Crée le premier !</div>';
+  }
+}
+async function startDM(otherId){if(!needAuth())return;
+  // Réutilise un DM existant si on en a déjà un avec ce joueur
+  const dmIds=state.convos.filter(c=>!c.is_group).map(c=>c.id);
+  if(dmIds.length){
+    const {data:shared}=await sb.from('conversation_members').select('conversation_id').eq('user_id',otherId).in('conversation_id',dmIds);
+    if(shared&&shared.length){closeSheets();return openConvo(shared[0].conversation_id);}
+  }
+  const {data:conv,error}=await sb.from('conversations').insert({is_group:false,created_by:uid()}).select().single();
+  if(error)return fail(error,'conversation');
+  const {error:e2}=await sb.from('conversation_members').insert([{conversation_id:conv.id,user_id:uid()},{conversation_id:conv.id,user_id:otherId}]);
+  if(e2)return fail(e2,'conversation');
+  closeSheets(); await loadConvos(); openConvo(conv.id);
+}
+async function createGroup(){if(!needAuth())return;
+  const nom=$('#grpName').value.trim(); if(!nom)return toast('Donne un nom au groupe');
+  const picks=$all('.grpPick:checked').map(x=>x.value);
+  const {data:conv,error}=await sb.from('conversations').insert({is_group:true,nom,is_public:$('#grpPublic').checked,created_by:uid()}).select().single();
+  if(error)return fail(error,'groupe');
+  const {error:e2}=await sb.from('conversation_members').insert([uid(),...picks].map(u=>({conversation_id:conv.id,user_id:u})));
+  if(e2)return fail(e2,'groupe');
+  closeSheets(); toast('Groupe créé ✅'); await loadConvos(); openConvo(conv.id);
+}
+async function joinGroup(id){if(!needAuth())return;
+  const {error}=await sb.from('conversation_members').insert({conversation_id:id,user_id:uid()});
+  if(error)return fail(error,'rejoindre');
+  closeSheets(); toast('Groupe rejoint ✅'); await loadConvos(); openConvo(id);
+}
+
+/* =========================================================
+   PROFIL & PARAMÈTRES
+   ========================================================= */
+async function loadProfile(){
+  if(!uid())return;
+  const {data,error}=await sb.from('profiles').select('*').eq('id',uid()).maybeSingle();
+  if(error)return fail(error,'profil');
+  if(!data){toast('Profil introuvable — réinstalle le schéma SQL');return;}
+  state.profile=data;
+  $('#pfBanner').style.background=data.banner_url?`center/cover no-repeat url("${data.banner_url}")`:'linear-gradient(90deg,var(--accent),var(--blue))';
+  $('#pfAvatar').innerHTML=data.avatar_url?`<img src="${esc(data.avatar_url)}" alt="">`:'🙂';
+  $('#pfPseudo').textContent=data.pseudo;
+  $('#pfHandle').textContent='@'+data.handle;
+  $('#pfBio').textContent=data.bio||'Ajoute une bio avec « Modifier » ✏️';
+  $('#pfMeta').textContent=['📍 '+(data.ville||'Ville non renseignée')+(data.departement?` (${data.departement})`:''),data.poste].filter(Boolean).join('  ·  ');
+  $('#pfPoints').textContent=data.points; $('#pfButs').textContent=data.buts;
+  const {data:clips}=await sb.from('posts_feed').select('id,texte,nb_likes,video_url,image_url').eq('author_id',uid()).eq('type','clip');
+  $('#pfClips').textContent=(clips||[]).length;
+  $('#myClips').innerHTML=(clips||[]).map(c=>`<div class="card" style="height:120px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:8px;text-align:center;">
+    ${c.image_url?`<img src="${esc(c.image_url)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55;">`:''}
+    <span style="font-size:24px;position:relative;">▶️</span><span style="font-size:11px;color:var(--text);margin-top:4px;overflow:hidden;max-height:28px;position:relative;">${esc(c.texte)}</span>
+    <span style="position:absolute;top:8px;right:10px;font-size:11px;color:var(--amber);font-weight:700;">❤️ ${c.nb_likes}</span></div>`).join('')||'<div style="grid-column:span 2;color:var(--text-faint);font-size:13px;">Pas encore de clip. Publie-en un depuis Débats.</div>';
+}
+$('#btnEditProfile').addEventListener('click',()=>{
+  if(!needAuth())return;
+  const p=state.profile||{};
+  window._edGeo={ville:p.ville||null,departement:p.departement||null,region:p.region||null};
+  openSheet('sheetSettings',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:800;font-size:16px;">Modifier le profil</div>${closeBtn}</div>
+    <div class="sheet-body section-pad" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+      <div id="edBanner" style="height:90px;border-radius:12px;background:${p.banner_url?`center/cover no-repeat url(&quot;${esc(p.banner_url)}&quot;)`:'linear-gradient(90deg,var(--accent),var(--blue))'};"></div>
+      <button class="pill" style="justify-content:center;" onclick="changeBanner()">🖼️ Changer la bannière</button>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div id="edAvatar">${avatarHtml(p.avatar_url,'lg')}</div>
+        <button class="pill" onclick="changeAvatar()">📷 Changer la photo</button>
+      </div>
+      <input id="edPseudo" maxlength="40" value="${esc(p.pseudo)}" placeholder="Pseudo" style="${inputStyle}">
+      <textarea id="edBio" rows="3" maxlength="200" placeholder="Bio" style="${inputStyle}">${esc(p.bio)}</textarea>
+      <select id="edPoste" style="${inputStyle}color:var(--text);">
+        ${['','Gardien','Défenseur','Milieu','Attaquant'].map(x=>`<option value="${x}" ${p.poste===x?'selected':''}>${x||'Poste (facultatif)'}</option>`).join('')}
+      </select>
+      <div>
+        <input id="edVille" maxlength="60" value="${esc(p.ville)}" placeholder="Ta ville (pour les classements)" autocomplete="off" style="${inputStyle}" oninput="searchEdVille(this.value)">
+        <div id="edVilleRes" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;"></div>
+      </div>
+      <button class="pill active" style="width:100%;justify-content:center;${greenBtn}" onclick="saveProfile()">Enregistrer</button>
+    </div>`);
+});
+async function searchEdVille(q){
+  clearTimeout(window._evT);
+  window._evT=setTimeout(async()=>{
+    const box=$('#edVilleRes'); if(!box)return;
+    if(q.trim().length<2){box.innerHTML='';return;}
+    const res=await fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(q)}&fields=nom,codeDepartement,codeRegion&boost=population&limit=5`).then(r=>r.json()).catch(()=>[]);
+    window._edVilles=res;
+    box.innerHTML=res.map((c,i)=>`<div class="card" style="padding:9px 12px;cursor:pointer;font-size:13.5px;" onclick="pickEdVille(${i})">🏙️ ${esc(c.nom)} <span style="color:var(--text-faint);">· ${esc(depName(c.codeDepartement))} (${c.codeDepartement})</span></div>`).join('');
+  },300);
+}
+function pickEdVille(i){
+  const c=window._edVilles[i];
+  window._edGeo={ville:c.nom,departement:c.codeDepartement,region:c.codeRegion};
+  $('#edVille').value=c.nom; $('#edVilleRes').innerHTML='';
+}
+async function changeBanner(){
+  if(!needAuth())return;
+  const f=await pickFile('image/*'); if(!f)return;
+  toast('Envoi de la bannière…');
+  try{
+    const url=await uploadMedia(f,'banners');
+    const {error}=await sb.from('profiles').update({banner_url:url}).eq('id',uid());
+    if(error)throw error;
+    state.profile.banner_url=url;
+    const b=$('#edBanner'); if(b)b.style.background=`center/cover no-repeat url("${url}")`;
+    toast('Bannière mise à jour ✅'); loadProfile();
+  }catch(e){fail(e,'bannière');}
+}
+async function saveProfile(){
+  if(!needAuth())return;
+  const villeTxt=$('#edVille').value.trim();
+  let geo=window._edGeo||{};
+  if(!villeTxt){geo={ville:null,departement:null,region:null};}
+  else if(norm(villeTxt)!==norm(geo.ville)){
+    // ville tapée sans choisir dans la liste : on prend la commune la plus peuplée qui correspond
+    const res=await fetch(`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(villeTxt)}&fields=nom,codeDepartement,codeRegion&boost=population&limit=1`).then(r=>r.json()).catch(()=>[]);
+    geo=res[0]?{ville:res[0].nom,departement:res[0].codeDepartement,region:res[0].codeRegion}:{ville:villeTxt,departement:null,region:null};
+  }
+  const upd={pseudo:$('#edPseudo').value.trim()||state.profile.pseudo,bio:$('#edBio').value.trim(),poste:$('#edPoste').value||null,...geo};
+  const {error}=await sb.from('profiles').update(upd).eq('id',uid());
+  if(error)return fail(error,'profil');
+  closeSheets(); toast('Profil mis à jour ✅'); await loadProfile(); await fillRankZone(); renderRanking();
+}
+async function changeAvatar(){if(!needAuth())return;
+  const f=await pickFile('image/*'); if(!f)return;
+  toast('Envoi de la photo…');
+  try{
+    const url=await uploadMedia(f,'avatars');
+    const {error}=await sb.from('profiles').update({avatar_url:url}).eq('id',uid());
+    if(error)throw error;
+    state.profile.avatar_url=url; $('#edAvatar').innerHTML=avatarHtml(url,'lg');
+    toast('Photo de profil mise à jour ✅'); loadProfile();
+  }catch(e){fail(e,'photo de profil');}
+}
+$('#btnSettings').addEventListener('click',()=>{
+  if(!needAuth())return;
+  openSheet('sheetSettings',`
+    <div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:800;font-size:16px;">Paramètres</div>${closeBtn}</div>
+    <div class="sheet-body section-pad" style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+      <div class="card" style="padding:13px 14px;font-size:13.5px;color:var(--text-dim);">Connecté en tant que <b style="color:var(--text);">${esc(state.me.email)}</b></div>
+      <div class="card" style="padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="openPrivacy()"><span>🔒</span><span style="flex:1;font-size:14px;">Confidentialité et données</span><span style="color:var(--text-faint);">›</span></div>
+      <div class="card" style="padding:13px 14px;color:var(--red);text-align:center;font-weight:700;margin-top:6px;cursor:pointer;" onclick="closeSheets();sb.auth.signOut()">Déconnexion</div>
+    </div>`);
+});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+initMap();
+
+
+</script>
+
+</body>
+</html>
