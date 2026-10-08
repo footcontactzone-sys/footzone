@@ -10,8 +10,8 @@
 <title>FootZone</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#14284b">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-v3.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32-v3.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
 <style>
@@ -121,9 +121,9 @@ body{
   justify-content:space-around;
   align-items:center;
   padding:6px;
-  background:rgba(20,40,75,0.72);
-  -webkit-backdrop-filter:blur(18px) saturate(1.6);
-  backdrop-filter:blur(18px) saturate(1.6);
+  background:rgba(16,32,62,0.42);
+  -webkit-backdrop-filter:blur(20px) saturate(1.8);
+  backdrop-filter:blur(20px) saturate(1.8);
   border:1px solid rgba(255,255,255,0.10);
   border-radius:28px;
   box-shadow:0 10px 30px rgba(0,0,0,0.45);
@@ -253,12 +253,54 @@ p.subtitle{color:var(--text-dim);font-size:13px;padding:0 16px 10px;}
 .crop-view{position:relative;overflow:hidden;margin:0 auto;background:#000;touch-action:none;cursor:grab;box-shadow:0 0 0 2px rgba(255,255,255,.85) inset;}
 .crop-view img{position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;pointer-events:none;max-width:none;}
 .crop-x{background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);width:32px;height:32px;border-radius:50%;cursor:pointer;}
-.fz-base{filter:sepia(1) hue-rotate(185deg) saturate(3.2) brightness(1.12) contrast(1.05);}
-.fz-labels{filter:brightness(1.15);}
+.fz-base{filter:sepia(1) hue-rotate(187deg) saturate(2.5) brightness(0.7) contrast(1.12);}
+.fz-labels{filter:brightness(1.05) opacity(.9);}
 .notif-btn{position:relative;background:var(--bg-card);border:1px solid var(--border);color:var(--text);width:34px;height:34px;border-radius:50%;font-size:17px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;}
 #bell-carte{width:46px;height:46px;border-radius:14px;background:rgba(20,40,75,.85);border-color:#2a3f66;font-size:20px;}
 .notif-count{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);box-sizing:border-box;}
 .notif-count[hidden]{display:none;}
+/* Îlots flottants transparents (on voit bouger ce qu'il y a derrière) */
+.glass-island,.brandbar.zone-bar,.glass-pill{background:rgba(16,32,62,0.42)!important;-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);border:1px solid rgba(255,255,255,0.12);box-shadow:0 8px 26px rgba(0,0,0,0.35);}
+#mapTop.glass-island{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:10px;right:10px;z-index:20;padding:8px 10px 10px;border-radius:24px;}
+.map-head,.brandbar.zone-bar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;}
+.bb-side{display:flex;align-items:center;gap:6px;min-width:0;}
+.bb-right{justify-content:flex-end;}
+.zone-title{display:flex;align-items:center;gap:6px;background:none;border:none;padding:0;color:var(--text);cursor:pointer;justify-self:center;}
+.zone-title h1{font-size:clamp(15px,4.6vw,20px);font-weight:900;font-style:italic;letter-spacing:.2px;white-space:nowrap;margin:0;line-height:1;}
+.zone-title h1 .z{color:var(--accent);}
+.zone-title .brand-mark{width:20px;height:26px;margin:0;}
+#mapTop .searchbar{background:rgba(10,20,40,0.55);}
+.map-filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:8px;}
+.map-filters .pill{justify-content:center;padding:7px 4px;font-size:12.5px;gap:5px;min-width:0;white-space:nowrap;background:rgba(10,20,40,0.55);}
+.map-filters .pill.active{background:#fff;color:#0b1730;}
+.brandbar.zone-bar{position:sticky;top:8px;z-index:30;margin:8px 10px 6px;padding:8px 10px;border-radius:22px;}
+.zone-bar .refresh-btn,.zone-bar .notif-btn,.zone-bar #btnNewMsg,.zone-bar #btnSettings{width:34px;height:34px;flex-shrink:0;background:rgba(10,20,40,0.5)!important;border:1px solid rgba(255,255,255,0.12)!important;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--text);}
+.bb-sub{display:block;text-align:center;font-size:11.5px;color:var(--text-faint);margin:-2px 0 4px;}
+.glass-pill{color:var(--text);}
+/* Panneaux : poignée plus grande, redimensionnables */
+.sheet-handle{box-sizing:content-box;width:44px;padding:9px 60px;margin:0 auto;background-clip:content-box;touch-action:none;cursor:grab;}
+.sheet-handle + .section-pad{touch-action:pan-x;}
+.sheet.sized .sheet-body{flex:1 1 auto;min-height:0;max-height:none!important;}
+.sheet.peek{box-shadow:0 -10px 30px rgba(0,0,0,.45);}
+/* Double-tap */
+.heart-burst{position:absolute;transform:translate(-50%,-50%);font-size:64px;color:#ef4444;pointer-events:none;animation:heartPop .8s ease-out forwards;z-index:3;}
+@keyframes heartPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.3);}20%{opacity:1;transform:translate(-50%,-50%) scale(1.15);}45%{transform:translate(-50%,-50%) scale(.95);}100%{opacity:0;transform:translate(-50%,-90%) scale(1);}}
+/* Squelette */
+.skel-card{padding:14px;}
+.skel{background:linear-gradient(90deg,var(--bg-card),#232830,var(--bg-card));background-size:200% 100%;border-radius:6px;animation:skel 1.2s linear infinite;}
+@keyframes skel{to{background-position:-200% 0;}}
+/* Matchs près de toi */
+#nearMatches{padding:10px 0 0;}
+.near-title{font-size:12.5px;font-weight:800;color:var(--text-dim);letter-spacing:.3px;padding:0 16px;}
+.near-row{display:flex;gap:12px;overflow-x:auto;padding:10px 16px 4px;scrollbar-width:none;}
+.near-row::-webkit-scrollbar{display:none;}
+.near-item{flex:0 0 70px;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--text);cursor:pointer;padding:0;}
+.near-ring{width:62px;height:62px;border-radius:50%;padding:3px;box-sizing:border-box;background:conic-gradient(var(--accent) calc(var(--p,0)*1%),rgba(255,255,255,.14) 0);display:flex;}
+.near-in{flex:1;border-radius:50%;background:#14284b;border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;}
+.near-ring.add{background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.3);align-items:center;justify-content:center;font-size:24px;color:var(--accent);}
+.near-l1{font-size:11.5px;font-weight:700;}
+.near-l2{font-size:10.5px;color:var(--text-faint);max-width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.near-empty{align-self:center;font-size:12.5px;color:var(--text-faint);max-width:220px;}
 #mapTop .searchbar{min-width:0;}
 .notif-item{display:flex;gap:12px;align-items:flex-start;width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:12px;color:var(--text);cursor:pointer;font:inherit;}
 .notif-item.unread{border-color:rgba(34,197,94,.55);background:rgba(34,197,94,.07);}
@@ -447,22 +489,23 @@ input,textarea,select{font-family:inherit;background:none;border:none;color:var(
 
   <!-- ============ CARTES ============ -->
   <div class="screen active" id="screen-carte">
-    <div id="map" style="position:absolute;inset:0;background:#101c33;z-index:0;"></div>
-    <div id="mapTop" style="position:absolute;top:0;left:0;right:0;z-index:20;padding:12px 16px 8px;background:linear-gradient(to bottom, rgba(13,15,16,0.95), rgba(13,15,16,0.0));">
-      <div style="display:flex;align-items:center;gap:10px;"><button id="mapLogo" title="FootZone" aria-label="FootZone, à propos" onclick="openAssistant()" style="flex-shrink:0;width:46px;height:46px;border-radius:14px;border:1px solid #2a3f66;background:#14284b;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;"><svg width="26" height="34" viewBox="0 0 200 260" role="img" aria-label="FootZone" ><use href="#fzLogo"></use></svg></button><div class="searchbar" style="flex:1;"><span><i class="ic ic-search"></i></span><input id="mapSearch" placeholder="Chercher un terrain…" autocomplete="off" style="flex:1;font-size:14.5px;"></div></div>
+    <div id="map" style="position:absolute;inset:0;background:#0a1428;z-index:0;"></div>
+    <div id="mapTop" class="glass-island">
+      <div class="map-head"><div class="bb-side bb-left" id="mapHeadLeft"></div><button id="mapLogo" class="zone-title" aria-label="FootZone, à propos" onclick="openAssistant()"><svg class="brand-mark" viewBox="0 0 200 260" aria-hidden="true"><use href="#fzLogo"></use></svg><h1>FOOT<span class="z">ZONE</span></h1></button><div class="bb-side bb-right" id="mapHeadRight"></div></div>
+      <div class="searchbar" style="margin-top:8px;"><span><i class="ic ic-search"></i></span><input id="mapSearch" placeholder="Chercher un terrain…" autocomplete="off" style="flex:1;font-size:14.5px;"></div>
       <div id="mapSearchResults" style="margin-top:6px;display:flex;flex-direction:column;gap:6px;"></div>
-      <div style="display:flex;gap:8px;overflow-x:auto;margin-top:10px;scrollbar-width:none;">
+      <div class="map-filters">
         <div class="pill active" data-filter="all">Tous</div>
-        <div class="pill" data-filter="city"><span style="color:var(--blue)">●</span> City Stade</div>
-        <div class="pill" data-filter="five"><span style="color:var(--red)">●</span> Terrain de Five</div>
-        <div class="pill" data-filter="club"><span style="color:var(--accent)">●</span> Club</div>
-        <div class="pill" data-filter="universite"><span style="color:#a855f7">●</span> Université</div>
+        <div class="pill" data-filter="city"><i class="dot" style="background:var(--blue)"></i>City</div>
+        <div class="pill" data-filter="five"><i class="dot" style="background:var(--red)"></i>Five</div>
+        <div class="pill" data-filter="club"><i class="dot" style="background:var(--accent)"></i>Club</div>
+        <div class="pill" data-filter="universite"><i class="dot" style="background:#a855f7"></i>Univ.</div>
       </div>
     </div>
     <div id="mapHintWrap" style="position:absolute;bottom:calc(104px + env(safe-area-inset-bottom,0px));left:70px;right:84px;z-index:20;display:flex;justify-content:center;">
-      <div class="pill" id="mapHint" style="background:rgba(23,25,28,0.92);cursor:pointer;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><i class="ic ic-search"></i> Ville, département, région</div>
+      <div class="pill glass-pill" id="mapHint" style="cursor:pointer;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><i class="ic ic-search"></i> Ville, département, région</div>
     </div>
-    <div id="pinBanner" class="card" style="display:none;position:absolute;top:118px;left:16px;right:16px;z-index:25;padding:12px 14px;align-items:center;gap:10px;background:rgba(23,25,28,0.96);">
+    <div id="pinBanner" class="card" style="display:none;position:absolute;top:calc(176px + env(safe-area-inset-top,0px));left:16px;right:16px;z-index:25;padding:12px 14px;align-items:center;gap:10px;background:rgba(23,25,28,0.96);">
       <span style="flex:1;font-size:13.5px;"><i class="ic ic-pin"></i> Touche la carte à l'endroit exact du terrain</span>
       <button class="pill" onclick="cancelPin()">Annuler</button>
     </div>
@@ -477,6 +520,7 @@ input,textarea,select{font-family:inherit;background:none;border:none;color:var(
   <div class="screen" id="screen-debats">
     <div class="brandbar"><span class="logo"><i class="ic ic-flame"></i></span><h1>Débats</h1></div>
     <div class="section-pad"><div class="searchbar"><span><i class="ic ic-search"></i></span><input id="feedSearch" placeholder="Rechercher un joueur, un débat, un terrain…" autocomplete="off" style="flex:1;font-size:14.5px;"></div></div>
+    <div id="nearMatches" style="display:none;"></div>
     <div id="trends" style="display:none;align-items:center;gap:8px;padding:12px 16px 0;color:var(--text-dim);font-size:12.5px;font-weight:700;overflow-x:auto;scrollbar-width:none;"></div>
     <div class="segrow" style="margin-top:10px;">
       <div class="seg active" data-feed="tout">Tout</div>
@@ -642,9 +686,9 @@ function ago(d){
   if(s<86400)return 'il y a '+Math.floor(s/3600)+' h'; return 'il y a '+Math.floor(s/86400)+' j';
 }
 function hhmm(d){return new Date(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
-function openSheet(id,html){const sh=$('#'+id);sh.innerHTML=html;$('#overlay').classList.add('show');sh.classList.add('show');}
+function openSheet(id,html){const sh=$('#'+id);$all('.sheet.show').forEach(x=>{if(x!==sh)x.classList.remove('show');});resetSheet(sh);sh.innerHTML=html;$('#overlay').classList.add('show');sh.classList.add('show');}
 function closeSheets(){
-  $all('.sheet').forEach(s=>s.classList.remove('show'));$('#overlay').classList.remove('show');
+  $all('.sheet').forEach(s=>{s.classList.remove('show');setTimeout(()=>{if(!s.classList.contains('show'))resetSheet(s);},300);});$('#overlay').classList.remove('show');
   if(state.terrainChannel){sb.removeChannel(state.terrainChannel);state.terrainChannel=null;}
   state.currentConvo=null;
   try{if(tempPin){map.removeLayer(tempPin);tempPin=null;}}catch(e){}
@@ -921,6 +965,7 @@ async function rejoindreMatch(id){
   if(!needAuth('Crée un compte pour rejoindre ce match'))return;
   const {error}=await sb.from('match_joueurs').insert({match_id:id,user_id:uid()});
   if(error)return toast(/complet/i.test(error.message)?'Ce match est complet':'Erreur : '+error.message);
+  buzz(20);
   const t=state.terrains.find(x=>x.id===state.currentTerrain);
   if(t)track('match_rejoint',{terrain_id:t.id,ville:t.ville,departement:t.departement,region:t.region});
   toast('Tu es dans le match '); refreshMatchViews();
@@ -1228,7 +1273,7 @@ async function toggleBravo(matchId,to){
   const res=on?await sb.from('match_bravos').delete().match({match_id:matchId,from_user:uid(),to_user:to})
               :await sb.from('match_bravos').insert({match_id:matchId,from_user:uid(),to_user:to});
   if(res.error)return fail(res.error,'bravo');
-  if(!on)toast('Bravo envoyé');
+  if(!on){buzz();toast('Bravo envoyé');}
   openRecap(matchId);
 }
 // Dessine le logo FootZone dans une image (pour le partage)
@@ -1295,7 +1340,7 @@ async function openDeepLink(){
   const id=new URLSearchParams(location.search).get('match'); if(!id||state.deepDone)return; state.deepDone=true;
   const {data:m}=await sb.from('matchs').select('id,terrain_id,statut').eq('id',id).maybeSingle();
   if(!m)return toast('Ce match n\'existe plus');
-  await goTerrain(m.terrain_id);
+  showTab('carte'); await goTerrain(m.terrain_id);
   setTimeout(()=>m.statut==='joue'?openRecap(m.id):renderTerrainSheet('matchs'),300);
   history.replaceState(null,'',location.pathname);
 }
@@ -1352,15 +1397,6 @@ async function loadBadges(played,B,P){
 state.notifs=[]; state.notifChannel=null;
 const NOTIF_IC={nouveau_match:'ball',rejoint:'users',complet:'check',resultat:'chart',bravo:'thumb'};
 function notifBell(id){return `<button class="notif-btn" id="${id}" aria-label="Notifications" onclick="openNotifs()"><i class="ic ic-bell"></i><span class="notif-count" hidden></span></button>`;}
-function installBells(){
-  const top=$('#mapLogo')?.parentNode; if(top&&!$('#bell-carte'))top.insertAdjacentHTML('beforeend',notifBell('bell-carte'));
-  ['debats','actu','classements','messages','profil'].forEach(t=>{
-    const r=$(`#refresh-${t}`); if(!r||$(`#bell-${t}`))return;
-    if(r.parentNode.classList.contains('brandbar')){const w=document.createElement('div');w.style.cssText='display:flex;align-items:center;gap:8px;';r.parentNode.insertBefore(w,r);w.appendChild(r);}
-    r.insertAdjacentHTML('beforebegin',notifBell(`bell-${t}`));
-  });
-  updateBells();
-}
 function updateBells(){
   const n=state.notifs.filter(x=>!x.lu).length, guest=!uid();
   $all('.notif-btn').forEach(b=>{b.style.display=guest?'none':'';const c=b.querySelector('.notif-count');c.hidden=!n;c.textContent=n>9?'9+':n;});
@@ -1376,7 +1412,7 @@ function subscribeNotifs(){
   state.notifChannel=sb.channel('mes-notifs').on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+uid()},p=>{
     const n=p.new; state.notifs.unshift(n); updateBells(); toast(n.titre);
     if(document.hidden&&lsGet('fz_notif_nav')==='oui'&&'Notification' in window&&Notification.permission==='granted'){
-      const show=r=>r?r.showNotification(n.titre,{body:n.corps||'',icon:'icon-192.png',badge:'favicon-32.png',tag:'fz-'+n.id}):new Notification(n.titre,{body:n.corps||'',icon:'icon-192.png'});
+      const show=r=>r?r.showNotification(n.titre,{body:n.corps||'',icon:'icon-192-v3.png',badge:'favicon-32-v3.png',tag:'fz-'+n.id}):new Notification(n.titre,{body:n.corps||'',icon:'icon-192-v3.png'});
       (navigator.serviceWorker?.getRegistration?.()||Promise.resolve(null)).then(show).catch(()=>{});
     }
   }).subscribe();
@@ -1403,7 +1439,7 @@ async function notifGo(id){
   const n=state.notifs.find(x=>x.id===id); if(!n)return; closeSheets();
   if(n.match_id){
     const {data:m}=await sb.from('matchs').select('id,terrain_id,statut').eq('id',n.match_id).maybeSingle();
-    if(m){await goTerrain(m.terrain_id);setTimeout(()=>m.statut==='joue'?openRecap(m.id):renderTerrainSheet('matchs'),300);return;}
+    if(m){showTab('carte');await goTerrain(m.terrain_id);setTimeout(()=>m.statut==='joue'?openRecap(m.id):renderTerrainSheet('matchs'),300);return;}
   }
   if(n.terrain_id)goTerrain(n.terrain_id);
 }
@@ -1835,6 +1871,140 @@ async function recropBanner(){
 }
 
 /* =========================================================
+   EN-TÊTES « ZONE » : un nom différent par page, centré, en îlot flottant
+   ========================================================= */
+const ZONE_TITLES={debats:['ZONE','DÉBAT'],actu:['ZONE','ACTU'],classements:['CLASSEMENT','ZONE'],messages:['ZONE','MESSAGE'],profil:['MY','ZONE']};
+const zoneWord=(a,b)=>[a,b].map(w=>w==='ZONE'?`<span class="z">${w}</span>`:w).join('');
+function layoutBrandbars(){
+  Object.entries(ZONE_TITLES).forEach(([t,[a,b]])=>{
+    const bar=$(`#screen-${t} .brandbar`); if(!bar||bar.dataset.zone)return; bar.dataset.zone='1';
+    const refresh=$(`#refresh-${t}`), extra=bar.querySelector('#btnNewMsg,#btnSettings'), maj=bar.querySelector('#actuMaj');
+    bar.innerHTML=''; bar.classList.add('zone-bar'); bar.style.justifyContent='';
+    const L=document.createElement('div'); L.className='bb-side bb-left'; if(refresh)L.appendChild(refresh);
+    const C=document.createElement('div'); C.className='zone-title';
+    C.innerHTML=`<svg class="brand-mark" viewBox="0 0 200 260" aria-hidden="true"><use href="#fzLogo"></use></svg><h1>${zoneWord(a,b)}</h1>`;
+    const R=document.createElement('div'); R.className='bb-side bb-right'; if(extra)R.appendChild(extra);
+    bar.append(L,C,R);
+    if(maj){maj.classList.add('bb-sub');bar.after(maj);}
+  });
+}
+function installBells(){
+  const mr=$('#mapHeadRight'); if(mr&&!$('#bell-carte'))mr.insertAdjacentHTML('beforeend',notifBell('bell-carte'));
+  Object.keys(ZONE_TITLES).forEach(t=>{
+    const r=$(`#screen-${t} .bb-right`); if(r&&!$(`#bell-${t}`))r.insertAdjacentHTML('afterbegin',notifBell(`bell-${t}`));
+  });
+  updateBells();
+}
+function showTab(t){const b=document.querySelector(`.navbtn[data-tab="${t}"]`);if(b&&state.tab!==t)b.click();}
+
+/* =========================================================
+   PANNEAUX DU BAS : on les agrandit, réduit ou ferme au doigt
+   (poignée ou titre). Réduit, la carte reste utilisable derrière.
+   ========================================================= */
+const SHEET_SNAPS=[0.32,0.55,0.9];
+function appH(){return $('#app').getBoundingClientRect().height;}
+function setSheetH(sh,r){
+  sh.classList.add('sized'); sh.style.maxHeight='none'; sh.style.height=Math.round(appH()*r)+'px';
+  const peek=r<=0.6; sh.classList.toggle('peek',peek); $('#overlay').classList.toggle('show',!peek);
+}
+function resetSheet(sh){sh.classList.remove('sized','peek');sh.style.height='';sh.style.maxHeight='';}
+function initSheetResize(){
+  document.addEventListener('pointerdown',e=>{
+    const sh=e.target.closest('.sheet.show'); if(!sh)return;
+    const onHandle=e.target.closest('.sheet-handle');
+    const onHead=e.target.closest('.sheet-handle + .section-pad')&&!e.target.closest('button,input,textarea,select,a,[onclick]');
+    if(!onHandle&&!onHead)return;
+    const H=appH(), y0=e.clientY, h0=sh.getBoundingClientRect().height; let moved=false;
+    sh.style.transition='none';
+    const move=ev=>{const dy=ev.clientY-y0; if(Math.abs(dy)>5)moved=true; if(!moved)return;
+      ev.preventDefault(); sh.classList.add('sized'); sh.style.maxHeight='none';
+      sh.style.height=Math.max(H*0.12,Math.min(H*0.94,h0-dy))+'px';};
+    const up=()=>{
+      document.removeEventListener('pointermove',move); document.removeEventListener('pointerup',up); document.removeEventListener('pointercancel',up);
+      sh.style.transition='';
+      const r=sh.getBoundingClientRect().height/H;
+      if(!moved){if(onHandle)setSheetH(sh,r>0.6?0.4:0.9);return;}      // une touche sur la poignée : grand ⇄ petit
+      if(r<0.2){closeSheets();return;}                                  // tiré tout en bas : fermé
+      setSheetH(sh,SHEET_SNAPS.reduce((a,b)=>Math.abs(b-r)<Math.abs(a-r)?b:a));
+    };
+    document.addEventListener('pointermove',move,{passive:false}); document.addEventListener('pointerup',up); document.addEventListener('pointercancel',up);
+  });
+}
+
+/* =========================================================
+   CARTE : le monde s'arrête aux bords, pas de copies à l'infini
+   ========================================================= */
+const WORLD=[[-85.05,-180],[85.05,180]];
+function fitWorldZoom(){
+  if(!map)return; const s=map.getSize();
+  const z=Math.max(1,Math.ceil(Math.log2(Math.max(s.x,s.y)/256)));
+  map.setMinZoom(z);
+}
+
+/* =========================================================
+   RETOUR AU TOUCHER (vibration courte sur Android)
+   ========================================================= */
+function buzz(ms=12){try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}
+
+/* Double-tap sur un post pour liker (comme Instagram) */
+function initDoubleTapLike(){
+  const list=$('#feedList'); if(!list||list.dataset.dt)return; list.dataset.dt='1';
+  let last={id:null,t:0};
+  list.addEventListener('pointerup',e=>{
+    const card=e.target.closest('[data-post]'); if(!card||e.target.closest('button,a,video,[onclick],input'))return;
+    const id=card.dataset.post, now=Date.now();
+    if(last.id===id&&now-last.t<320){
+      last={id:null,t:0};
+      const r=card.getBoundingClientRect(), h=document.createElement('div');
+      h.className='heart-burst'; h.innerHTML='<i class="ic ic-heart-fill"></i>';
+      h.style.left=(e.clientX-r.left)+'px'; h.style.top=(e.clientY-r.top)+'px';
+      card.style.position='relative'; card.appendChild(h); setTimeout(()=>h.remove(),800);
+      if(!state.myLikes.has(id))toggleLike(id); else buzz();
+    }else last={id,t:now};
+  });
+}
+
+/* Squelette pendant le premier chargement du fil */
+function feedSkeleton(){
+  const l=$('#feedList'); if(!l||(state.posts&&state.posts.length))return;
+  l.innerHTML=Array.from({length:3},()=>`<div class="card skel-card"><div style="display:flex;gap:10px;align-items:center;"><div class="skel" style="width:36px;height:36px;border-radius:50%;"></div><div class="skel" style="width:45%;height:12px;"></div></div><div class="skel" style="height:12px;margin-top:14px;"></div><div class="skel" style="height:12px;width:70%;margin-top:8px;"></div></div>`).join('');
+}
+
+/* =========================================================
+   « MATCHS PRÈS DE TOI » en haut de ZoneDébat (format stories,
+   mais pour aller jouer, pas pour scroller)
+   ========================================================= */
+async function loadNearMatches(){
+  const box=$('#nearMatches'); if(!box)return;
+  const {data,error}=await sb.from('matchs').select('id,debut,places,terrain_id,terrains(nom,ville,lat,lng),match_joueurs(count)')
+    .eq('statut','ouvert').gt('debut',new Date().toISOString()).order('debut').limit(60);
+  if(error||!data){box.style.display='none';return;}
+  const ville=state.profile?.ville, c=map?map.getCenter():{lat:45.75,lng:4.85};
+  const dist=t=>t?Math.hypot(t.lat-c.lat,(t.lng-c.lng)*Math.cos(c.lat*Math.PI/180)):99;
+  const L=data.map(m=>({...m,n:m.match_joueurs?.[0]?.count||0}))
+    .filter(m=>m.n<m.places)
+    .sort((a,b)=>((ville&&b.terrains?.ville===ville)-(ville&&a.terrains?.ville===ville))||dist(a.terrains)-dist(b.terrains)||new Date(a.debut)-new Date(b.debut))
+    .slice(0,12);
+  state.nearMatches=L;
+  const h=d=>{const x=new Date(d),t=new Date();const j=x.toDateString()===t.toDateString()?'Auj.':(new Date(t.getTime()+864e5).toDateString()===x.toDateString()?'Dem.':x.toLocaleDateString('fr-FR',{weekday:'short'}));return j+' '+x.getHours()+'h'+String(x.getMinutes()).padStart(2,'0').replace(/^00$/,'');};
+  box.style.display='';
+  box.innerHTML=`<div class="near-title"><i class="ic ic-ball"></i> Matchs près de toi</div><div class="near-row">
+    <button class="near-item" onclick="nearCreate()"><span class="near-ring add"><i class="ic ic-plus"></i></span><span class="near-l1">Organiser</span><span class="near-l2">un match</span></button>
+    ${L.map(m=>`<button class="near-item" onclick="openNearMatch('${m.id}')"><span class="near-ring" style="--p:${Math.round(m.n/m.places*100)}"><span class="near-in">${m.n}/${m.places}</span></span>
+      <span class="near-l1">${esc(h(m.debut))}</span><span class="near-l2">${esc(m.terrains?.nom||'')}</span></button>`).join('')}
+    ${L.length?'':'<div class="near-empty">Aucun match prévu autour de toi pour l\'instant. Lance le premier !</div>'}
+  </div>`;
+}
+async function openNearMatch(id){
+  const m=(state.nearMatches||[]).find(x=>x.id===id); if(!m)return;
+  showTab('carte'); await goTerrain(m.terrain_id); setTimeout(()=>renderTerrainSheet('matchs'),300);
+}
+function nearCreate(){
+  if(!needAuth('Crée un compte pour organiser un match'))return;
+  showTab('carte'); toast('Touche un terrain sur la carte, onglet Matchs, puis « Créer un match ici »');
+}
+
+/* =========================================================
    AUTHENTIFICATION
    ========================================================= */
 function setAuthMode(m){
@@ -1943,20 +2113,21 @@ $('#fabBtn').addEventListener('click',()=>{
 let map=null,markers=[];
 function initMap(){
   try{
-    map=L.map('map',{zoomControl:false,attributionControl:true}).setView([45.748,4.880],11);
+    map=L.map('map',{zoomControl:false,attributionControl:true,maxBounds:WORLD,maxBoundsViscosity:1,worldCopyJump:false,minZoom:2}).setView([45.748,4.880],11);
+    fitWorldZoom(); map.on('resize',fitWorldZoom);
     map.attributionControl.setPrefix(false);
     map.attributionControl.setPosition('bottomleft');
     map.attributionControl.addAttribution('Terrains : Data ES (ministère des Sports), © OpenStreetMap');
     const esri='https://server.arcgisonline.com/ArcGIS/rest/services/';
     // Plan : fond gris foncé Esri + noms de rues/lieux (même serveur que le satellite, qui fonctionne chez toi)
     const plan=L.layerGroup([
-      L.tileLayer(esri+'Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{className:'fz-base',maxZoom:19,maxNativeZoom:16,attribution:'Fond © Esri, HERE, Garmin, OpenStreetMap'}),
-      L.tileLayer(esri+'Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{className:'fz-labels',maxZoom:19,maxNativeZoom:16})
+      L.tileLayer(esri+'Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{className:'fz-base',noWrap:true,bounds:WORLD,maxZoom:19,maxNativeZoom:16,attribution:'Fond © Esri, HERE, Garmin, OpenStreetMap'}),
+      L.tileLayer(esri+'Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{className:'fz-labels',noWrap:true,bounds:WORLD,maxZoom:19,maxNativeZoom:16})
     ]);
     // Satellite : imagerie + noms de lieux par-dessus
     const sat=L.layerGroup([
-      L.tileLayer(esri+'World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagerie © Esri'}),
-      L.tileLayer(esri+'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19})
+      L.tileLayer(esri+'World_Imagery/MapServer/tile/{z}/{y}/{x}',{noWrap:true,bounds:WORLD,maxZoom:19,attribution:'Imagerie © Esri'}),
+      L.tileLayer(esri+'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{noWrap:true,bounds:WORLD,maxZoom:19})
     ]);
     plan.addTo(map); window._planLayer=plan; window._satLayer=sat;
     map.on('click',onMapClick);
@@ -2965,6 +3136,7 @@ $all('#screen-debats .seg[data-feed]').forEach(s=>s.addEventListener('click',()=
 }));
 $('#feedSearch').addEventListener('input',e=>{state.feedQuery=e.target.value.trim().toLowerCase();renderFeed();});
 async function loadFeed(){
+  feedSkeleton(); loadNearMatches().catch(()=>{});
   const [feed,likes,reposts]=await Promise.all([
     sb.from('posts_feed').select('*').limit(150),
     uid()?sb.from('post_likes').select('post_id').eq('user_id',uid()):Promise.resolve({data:[]}),
@@ -3000,7 +3172,7 @@ function renderFeed(){setTimeout(()=>injectAds('#feedList','fil',8),0);
   const banner=tag?`<div class="card" style="padding:10px 14px;display:flex;align-items:center;font-size:13.5px;">Filtre : <b style="margin-left:6px;color:var(--accent);">${esc(tag)}</b><span style="margin-left:auto;cursor:pointer;color:var(--text-faint);" onclick="filterTag('${tag}')">✕</span></div>`:'';
   $('#feedList').innerHTML=banner+(list.map(p=>{
     const liked=state.myLikes.has(p.id), rep=state.myReposts.has(p.id), debat=p.type==='debat', mine=p.author_id===uid();
-    return `<div class="card" style="padding:14px;">
+    return `<div class="card" data-post="${p.id}" style="padding:14px;">
       <div style="display:flex;align-items:center;gap:10px;">
         ${avatarHtml(p.avatar_url,'sm',`border-color:${debat?'var(--amber)':'var(--accent)'};`)}
         <div style="flex:1;min-width:0;font-weight:700;font-size:14px;">${esc(p.pseudo)} <span style="color:var(--text-faint);font-weight:500;">@${esc(p.handle)} · ${ago(p.created_at)}</span></div>
@@ -3023,7 +3195,7 @@ async function toggleLike(id){if(!needAuth())return;
   const p=state.posts.find(x=>x.id===id), on=state.myLikes.has(id);
   const res=on?await sb.from('post_likes').delete().match({post_id:id,user_id:uid()}):await sb.from('post_likes').insert({post_id:id,user_id:uid()});
   if(res.error)return fail(res.error,'like');
-  on?state.myLikes.delete(id):state.myLikes.add(id); p.nb_likes+=on?-1:1; renderFeed();
+  if(!on)buzz(); on?state.myLikes.delete(id):state.myLikes.add(id); p.nb_likes+=on?-1:1; renderFeed();
 }
 async function toggleRepost(id){if(!needAuth())return;
   const p=state.posts.find(x=>x.id===id), on=state.myReposts.has(id);
@@ -3604,7 +3776,7 @@ function installBrandMarks(){
 function hideSplash(){const sp=$('#splash');if(!sp||sp.dataset.done)return;sp.dataset.done='1';sp.style.opacity='0';setTimeout(()=>sp.remove(),400);}
 setTimeout(hideSplash,2600);
 installBrandMarks();
-installRefresh(); installAuthOptions(); installAssistant();
+installRefresh(); layoutBrandbars(); initSheetResize(); initDoubleTapLike(); installAuthOptions(); installAssistant();
 
 
 </script>
