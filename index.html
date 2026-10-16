@@ -59,15 +59,20 @@ body{
 #app{
   max-width:480px;
   margin:0 auto;
-  height:100vh;
-  height:100dvh;
-  height:var(--app-h,100dvh);
+  /* ancrée aux quatre bords plutôt qu'en hauteur : sur iPhone, 100dvh vaut la
+     hauteur sans la barre d'état, et l'appli se retrouvait trop courte en bas */
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
   padding-top:var(--sat);
   display:flex;
   flex-direction:column;
-  position:relative;
   background:var(--bg);
 }
+/* clavier ouvert : là seulement, on fixe une hauteur pour remonter l'appli */
+html.clavier #app{bottom:auto;height:var(--app-h);}
 /* ---------- top brand bar ---------- */
 .brandbar{
   display:flex;
@@ -6437,8 +6442,10 @@ function fitViewport(){
   const plein=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
   const h=vv?vv.height:plein;
   const E=document.documentElement.style;
-  if(plein-h>90)E.setProperty('--app-h',h+'px');   // clavier ouvert : on remonte
-  else E.removeProperty('--app-h');                // sinon 100dvh fait le travail
+  const clavier=plein-h>90;
+  document.documentElement.classList.toggle('clavier',clavier);
+  if(clavier)E.setProperty('--app-h',h+'px');      // clavier ouvert : on remonte
+  else E.removeProperty('--app-h');                // sinon : les quatre bords
   if(map)setTimeout(()=>map.invalidateSize(),60);
 }
 window.addEventListener('resize',fitViewport);
@@ -7070,7 +7077,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v30';
+const APP_VERSION='v31';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
