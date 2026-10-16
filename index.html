@@ -71,8 +71,10 @@ body{
   flex-direction:column;
   background:var(--bg);
 }
-/* clavier ouvert : là seulement, on fixe une hauteur pour remonter l'appli */
-html.clavier #app{bottom:auto;height:var(--app-h);}
+/* deux cas où on impose une hauteur plutôt que de s'ancrer en bas :
+   - clavier ouvert : on remonte l'appli au-dessus du clavier
+   - iPhone installé : le bas de la fenêtre tombe 47 px trop haut */
+html.clavier #app,html.plein #app{bottom:auto;height:var(--app-h);}
 /* ---------- top brand bar ---------- */
 .brandbar{
   display:flex;
@@ -6437,15 +6439,32 @@ $('#btnSettings').addEventListener('click',()=>{
 /* =========================================================
    INIT
    ========================================================= */
+// mesure la hauteur que vaut vraiment une unité CSS sur cet appareil
+function mesureH(unite){
+  if(!document.body)return 0;
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;top:0;left:-9px;width:1px;pointer-events:none;visibility:hidden;height:'+unite;
+  document.body.appendChild(d);
+  const v=Math.round(d.getBoundingClientRect().height); d.remove(); return v;
+}
+const appliInstallee=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 function fitViewport(){
   const vv=window.visualViewport;
-  const plein=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
-  const h=vv?vv.height:plein;
-  const E=document.documentElement.style;
-  const clavier=plein-h>90;
-  document.documentElement.classList.toggle('clavier',clavier);
-  if(clavier)E.setProperty('--app-h',h+'px');      // clavier ouvert : on remonte
-  else E.removeProperty('--app-h');                // sinon : les quatre bords
+  const petit=Math.max(window.innerHeight||0,document.documentElement.clientHeight||0);
+  const h=vv?vv.height:petit;
+  const R=document.documentElement, E=R.style;
+  const clavier=petit-h>90;
+  R.classList.toggle('clavier',clavier);
+  if(clavier){E.setProperty('--app-h',h+'px');R.classList.remove('plein');}
+  else{
+    // Sur iPhone, une fois l'appli installée, le petit viewport (dvh, svh,
+    // innerHeight) vaut la hauteur de l'écran MOINS la barre d'état, alors que
+    // la fenêtre commence quand même tout en haut : l'appli se retrouvait trop
+    // courte et laissait une bande vide en bas. Le grand viewport, lui, est juste.
+    const grand=mesureH('100lvh')||mesureH('100vh');
+    if(appliInstallee()&&grand>petit+8){E.setProperty('--app-h',grand+'px');R.classList.add('plein');}
+    else{E.removeProperty('--app-h');R.classList.remove('plein');}
+  }
   if(map)setTimeout(()=>map.invalidateSize(),60);
 }
 window.addEventListener('resize',fitViewport);
@@ -7077,7 +7096,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v32';
+const APP_VERSION='v33';
 /* ---------- bandeau de mesures (temporaire) ---------- */
 function fzDiag(){
   const mk=(h)=>{const d=document.createElement('div');
