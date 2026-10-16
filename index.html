@@ -1300,6 +1300,10 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;}
 .fz-labels{filter:brightness(1.75) contrast(1.1)!important;opacity:1!important;}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+
+/* ---------- v26 : bouton retour dans les panneaux ---------- */
+.back-btn{margin-right:2px;}
+.ic-chev-left{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 18l-6-6 6-6'/%3E%3C/svg%3E");}
 </style>
 </head>
 <body>
@@ -1541,6 +1545,7 @@ const FRESH_AUTH=/access_token=/.test(location.hash)&&!/type=recovery/.test(loca
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const state = {
+  sheetNav: [],
   me:null, profile:null,
   tab:'carte', mapFilter:'all', feed:'tout', rankTab:'joueurs', rankScale:'national',
   terrains:[], posts:[], myLikes:new Set(), myReposts:new Set(),
@@ -1579,11 +1584,40 @@ function ago(d){
   if(s<86400)return 'il y a '+Math.floor(s/3600)+' h'; return 'il y a '+Math.floor(s/86400)+' j';
 }
 function hhmm(d){return new Date(d).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
-function openSheet(id,html){const sh=$('#'+id);const was=sh.classList.contains('show');$all('.sheet.show').forEach(x=>{if(x!==sh)x.classList.remove('show');});if(!was)resetSheet(sh);sh.innerHTML=html;decorateSheet(sh);if(!sh.classList.contains('floating')&&!sh.classList.contains('peek'))$('#overlay').classList.add('show');sh.classList.add('show');}
+function sheetHeadOf(el){const x=el.querySelector('.x-btn');return x?x.parentElement:el.querySelector('.section-pad');}
+function sheetTitleOf(el){const h=sheetHeadOf(el);if(!h)return'';
+  const t=h.querySelector('.cv-top-txt b, div[style*="font-weight:800"], b');
+  return (t?t.textContent:h.textContent).trim().slice(0,80);}
+function sheetTitleHtml(html){const d=document.createElement('div');d.innerHTML=html;return sheetTitleOf(d);}
+// les panneaux « vivants » (terrain, conversation) sont rouverts par leur fonction,
+// les autres sont remis tels quels avec leur position de défilement
+function sheetSnap(sh){
+  if(sh.id==='sheetTerrain'&&sh.dataset.tid){const i=sh.dataset.tid;return{go:()=>openTerrain(i)};}
+  if(sh.id==='sheetConvo'&&state.currentConvo){const i=state.currentConvo;return{go:()=>openConvo(i)};}
+  const b=sh.querySelector('.sheet-body');
+  return{id:sh.id,html:sh.innerHTML,scroll:b?b.scrollTop:0};
+}
+function sheetBack(){
+  const p=state.sheetNav.pop(); if(!p)return closeSheets();
+  // un panneau rouvert par sa fonction ne doit pas réempiler celui qu'on quitte
+  if(p.go){state.navBack=1;setTimeout(()=>state.navBack=0,3000);return p.go();}
+  openSheet(p.id,p.html,true);
+  const b=$('#'+p.id).querySelector('.sheet-body'); if(b&&p.scroll)b.scrollTop=p.scroll;
+}
+function addBackBtn(sh){
+  const h=sheetHeadOf(sh); if(!h)return;
+  h.querySelector(':scope > .back-btn')?.remove();
+  if(state.sheetNav.length)h.insertAdjacentHTML('afterbegin','<button class="x-btn back-btn" onclick="sheetBack()" aria-label="Retour"><i class="ic ic-chev-left"></i></button>');
+}
+function openSheet(id,html,back){const sh=$('#'+id);const was=sh.classList.contains('show');
+  if(state.navBack){back=1;state.navBack=0;}
+  if(!back){const cur=$('.sheet.show');
+    if(!cur)state.sheetNav=[];
+    else if(sheetTitleOf(cur)!==sheetTitleHtml(html)){state.sheetNav.push(sheetSnap(cur));if(state.sheetNav.length>12)state.sheetNav.shift();}}$all('.sheet.show').forEach(x=>{if(x!==sh)x.classList.remove('show');});if(!was)resetSheet(sh);sh.innerHTML=html;decorateSheet(sh);if(!sh.classList.contains('floating')&&!sh.classList.contains('peek'))$('#overlay').classList.add('show');sh.classList.add('show');addBackBtn(sh);}
 function closeSheets(){
   $all('.sheet').forEach(s=>{s.classList.remove('show');setTimeout(()=>{if(!s.classList.contains('show'))resetSheet(s);},300);});$('#overlay').classList.remove('show');
   if(state.terrainChannel){sb.removeChannel(state.terrainChannel);state.terrainChannel=null;}
-  state.currentConvo=null;
+  state.currentConvo=null; state.sheetNav=[];
   try{if(tempPin){map.removeLayer(tempPin);tempPin=null;}}catch(e){}
 }
 $('#overlay').addEventListener('click',closeSheets);
@@ -5378,6 +5412,7 @@ async function renderTerrainSheet(tab){
       <div id="terrainBody" style="margin-top:6px;"><div style="padding:16px;color:var(--text-faint);">Chargement…</div></div>
     </div>`;
   openSheet('sheetTerrain',head);
+  $('#sheetTerrain').dataset.tid=t.id;
   const body=$('#terrainBody');
 
   if(tab==='photos'){await renderMedias(t,body);}
@@ -6897,7 +6932,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v25';
+const APP_VERSION='v26';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
