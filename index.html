@@ -1395,6 +1395,11 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;}
 .in-go{flex-shrink:0;background:var(--accent);color:var(--on-accent);border:0;border-radius:999px;padding:9px 13px;font-weight:800;font-size:13px;font-family:inherit;}
 .in-x{flex-shrink:0;width:36px;height:36px;border:0;background:transparent;color:var(--text-faint);display:flex;align-items:center;justify-content:center;font-size:16px;}
 @media (min-width:700px){.inst-nudge{left:50%;right:auto;width:min(560px,calc(100% - 24px));transform:translate(-50%,16px);}.inst-nudge.show{transform:translate(-50%,0);}}
+/* v37 assistant */
+#asChips{flex-wrap:nowrap!important;overflow-x:auto;flex-shrink:0;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent);padding-right:28px!important;}
+#asChips::-webkit-scrollbar{display:none;}
+#asChips .pill{flex-shrink:0;white-space:nowrap;}
+.sheet.sized #asLog{min-height:120px!important;}
 </style>
 </head>
 <body>
@@ -2770,8 +2775,7 @@ function openAssistant(welcome){
   }else{state.assistLog.forEach(m=>bubble(m.me,m.html));if(state.assistTab!==state.tab)botSay(assistantGreeting());}
   state.assistTab=state.tab;
   setChips(assistantChips());
-  setSheetH($('#sheetSettings'),0.42);
-  const sh=$('#sheetSettings'); if(sh&&!sh.classList.contains('floating'))setSheetH(sh,0.42);
+  const sh=$('#sheetSettings'); if(sh&&!sh.classList.contains('floating'))setSheetH(sh,0.52);
 }
 function bubble(me,html){
   const log=$('#asLog'); if(!log)return;
@@ -7217,7 +7221,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v36';
+const APP_VERSION='v37';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
