@@ -1304,6 +1304,10 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;}
 /* ---------- v26 : bouton retour dans les panneaux ---------- */
 .back-btn{margin-right:2px;}
 .ic-chev-left{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 18l-6-6 6-6'/%3E%3C/svg%3E");}
+
+/* ---------- v27 : glissement sur la barre du bas ---------- */
+.navbar{touch-action:pan-y;}
+.navbar .navbtn{transition:background .18s ease,color .18s ease,transform .18s ease;}
 </style>
 </head>
 <body>
@@ -2850,6 +2854,7 @@ function initEdgeSwipe(){
   const reset=(el)=>{if(!el)return;el.style.transition='';el.style.transform='';el.style.willChange='';el.classList.remove('pager-peek');el.style.top='';el.style.height='';};
   document.addEventListener('touchstart',e=>{
     s=null; if(e.touches.length!==1||busy())return;
+    if(e.target.closest('.navbar'))return;   // la barre du bas a son propre glissement
     const t=e.touches[0], w=window.innerWidth, edge=t.clientX<=EDGE||t.clientX>=w-EDGE;
     const anywhere=!['carte','scroll'].includes(state.tab);
     if(!edge&&(!anywhere||blocked(e.target)))return;
@@ -4612,21 +4617,72 @@ async function bootApp(){
 /* =========================================================
    NAVIGATION
    ========================================================= */
+// affichage seul : quelques classes, donc instantané même pendant un glissement
+function showTabFast(btn){
+  const t=btn.dataset.tab; if(state.tab===t)return;
+  state.tab=t; document.body.dataset.tab=t;
+  $all('.navbtn[data-tab]').forEach(b=>b.classList.toggle('active',b===btn));
+  $all('.screen').forEach(s=>s.classList.remove('active'));
+  $('#screen-'+t).classList.add('active');
+  if(t!=='scroll')scPauseAll();
+}
+// chargement des données : réservé à la page sur laquelle on s'arrête
+function loadTab(t){
+  if(t==='carte'&&map)setTimeout(()=>map.invalidateSize(),80);
+  if(t==='debats')loadFeed();
+  if(t==='actu')loadActu();
+  if(t==='classements')renderRanking();
+  if(t==='messages')loadConvos();
+  if(t==='profil')loadProfile();
+  if(t==='scroll'){loadScroll();setTimeout(scBarSize,50);}
+}
 $all('.navbtn[data-tab]').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    state.tab=btn.dataset.tab; document.body.dataset.tab=state.tab;
-    $all('.navbtn[data-tab]').forEach(b=>b.classList.toggle('active',b===btn));
-    $all('.screen').forEach(s=>s.classList.remove('active'));
-    $('#screen-'+btn.dataset.tab).classList.add('active');
-    if(btn.dataset.tab==='carte'&&map)setTimeout(()=>map.invalidateSize(),80);
-    if(btn.dataset.tab==='debats')loadFeed();
-    if(btn.dataset.tab==='actu')loadActu();
-    if(btn.dataset.tab==='classements')renderRanking();
-    if(btn.dataset.tab==='messages')loadConvos();
-    if(btn.dataset.tab==='profil')loadProfile();
-    if(btn.dataset.tab==='scroll'){loadScroll();setTimeout(scBarSize,50);}else scPauseAll();
-  });
+  btn.addEventListener('click',()=>{showTabFast(btn);loadTab(btn.dataset.tab);});
 });
+/* =========================================================
+   BARRE DU BAS : on glisse le doigt sur les icônes et la page
+   suit. L'affichage change tout de suite, le chargement des
+   données attend qu'on s'arrête (sinon 7 pages se chargeraient
+   pour un seul glissement).
+   ========================================================= */
+function initNavDrag(){
+  const bar=$('.navbar'); if(!bar)return;
+  let d=null;
+  const btnAt=x=>{for(const r of d.rects)if(x>=r.l&&x<=r.r)return r.b;
+    return x<d.rects[0].l?d.rects[0].b:d.rects[d.rects.length-1].b;};
+  bar.addEventListener('touchstart',e=>{
+    d=null; if(e.touches.length!==1)return;
+    const t=e.touches[0], btns=$all('.navbar .navbtn');
+    if(!btns.length)return;
+    d={x:t.clientX,y:t.clientY,on:false,
+       rects:btns.map(b=>{const c=b.getBoundingClientRect();return {b,l:c.left,r:c.right};})};
+  },{passive:true});
+  bar.addEventListener('touchmove',e=>{
+    if(!d)return; const t=e.touches[0];
+    if(!d.on){
+      // on n'enclenche qu'au-delà de 8 px, et surtout en horizontal : une simple
+      // touche reste une touche, et un glissement vers le haut ne déclenche rien
+      if(Math.abs(t.clientX-d.x)<8||Math.abs(t.clientX-d.x)<Math.abs(t.clientY-d.y))return;
+      d.on=true;
+    }
+    e.preventDefault();
+    const b=btnAt(t.clientX);
+    if(b&&!b.classList.contains('active')){showTabFast(b);buzz(5);
+      clearTimeout(d.tm); d.tm=setTimeout(()=>loadTab(state.tab),140);}
+  },{passive:false});
+  const stop=()=>{
+    if(!d)return; const D=d; d=null;
+    if(!D.on)return;                     // simple touche : le clic normal fait le travail
+    clearTimeout(D.tm); loadTab(state.tab);
+    // après un glissement, le navigateur envoie un clic sur l'icône de départ :
+    // il ramènerait à la page qu'on vient de quitter, on l'annule
+    const kill=ev=>{ev.stopPropagation();ev.preventDefault();};
+    bar.addEventListener('click',kill,{capture:true,once:true});
+    setTimeout(()=>bar.removeEventListener("click",kill,true),300);
+  };
+  bar.addEventListener('touchend',stop,{passive:true});
+  bar.addEventListener('touchcancel',stop,{passive:true});
+}
 $('#fabBtn').addEventListener('click',()=>{
   if(state.tab==='messages')openNewMsg(); else if(state.tab==='carte')startPin(); else if(state.tab==='scroll')newClip(); else openCompose();
 });
@@ -6932,7 +6988,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v26';
+const APP_VERSION='v27';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
@@ -7467,7 +7523,7 @@ const RK_POSTES=[['','Tous les postes',0],['L:Gardien','Gardiens',0],
 function rankPostes(){const k=state.rankPoste||'';if(!k)return null;return k.startsWith('L:')?POSTES[k.slice(2)]:[k];}
 function setRankPoste(k){state.rankPoste=k||'';syncRankChips();renderRanking();}
 
-installRefresh(); layoutBrandbars(); installBarSearches(); fitNavLabels(); initEdgeSwipe(); initSheetResize(); initDoubleTapLike(); initScrollGestures(); installAuthOptions(); installAssistant(); initIntroHooks();
+installRefresh(); layoutBrandbars(); installBarSearches(); fitNavLabels(); initEdgeSwipe(); initNavDrag(); initSheetResize(); initDoubleTapLike(); initScrollGestures(); installAuthOptions(); installAssistant(); initIntroHooks();
 
 
 </script>
