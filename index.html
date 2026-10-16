@@ -7096,43 +7096,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v34';
-/* ---------- bandeau de mesures (temporaire) ---------- */
-function fzDiag(){
-  const mk=(h)=>{const d=document.createElement('div');
-    d.style.cssText='position:fixed;height:'+h+';width:1px;top:0;left:-9px;pointer-events:none;';
-    document.body.appendChild(d); const v=Math.round(d.getBoundingClientRect().height); d.remove(); return v;};
-  const cs=getComputedStyle(document.documentElement);
-  const app=document.querySelector('#app'), bar=document.querySelector('.navbar');
-  const A=app?app.getBoundingClientRect():null, B=bar?bar.getBoundingClientRect():null;
-  const vv=window.visualViewport;
-  const sa=(n)=>{const d=document.createElement('div');
-    d.style.cssText='position:fixed;top:0;left:-9px;width:1px;height:env(safe-area-inset-'+n+',0px);';
-    document.body.appendChild(d); const v=Math.round(d.getBoundingClientRect().height); d.remove(); return v;};
-  const L=[
-    '>>> '+APP_VERSION+' · autonome:'+((matchMedia('(display-mode: standalone)').matches||navigator.standalone===true)?'oui':'non')
-      +' (std:'+(navigator.standalone===true?'1':'0')+' dm:'+(matchMedia('(display-mode: standalone)').matches?'1':'0')+')',
-    'classes:['+document.documentElement.className+'] ecran '+screen.width+'x'+screen.height,
-    'innerH '+window.innerHeight+' clientH '+document.documentElement.clientHeight+' vv '+(vv?Math.round(vv.height):'-')+' vvTop '+(vv?Math.round(vv.offsetTop):'-'),
-    '100vh '+mk('100vh')+' 100dvh '+mk('100dvh')+' 100svh '+mk('100svh')+' 100lvh '+mk('100lvh'),
-    'appli haut '+(A?Math.round(A.top):'-')+' haut.'+(A?Math.round(A.height):'-')+' bas '+(A?Math.round(A.bottom):'-'),
-    'barre bas '+(B?Math.round(B.bottom):'-')+' · sat '+sa('top')+' sab '+sa('bottom')+' · appH '+(cs.getPropertyValue('--app-h').trim()||'libre')
-  ];
-  let box=document.querySelector('#fzDiag');
-  if(!box){box=document.createElement('div'); box.id='fzDiag';
-    box.style.cssText='position:fixed;left:0;right:0;top:0;z-index:99999;background:#111a;color:#9f6;'
-      +'font:11px/1.45 ui-monospace,Menlo,monospace;white-space:pre;'
-      +'padding:calc(var(--sat) + 4px) 30px 6px 8px;'
-      +'-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);';
-    const x=document.createElement('button'); x.textContent='✕';
-    x.style.cssText='position:absolute;top:calc(var(--sat) + 2px);right:6px;background:none;border:none;color:#9f6;font-size:15px;';
-    x.onclick=()=>box.remove(); box.appendChild(x);
-    document.body.appendChild(box);}
-  box.firstChild && box.firstChild.nodeType===3 && box.firstChild.remove();
-  box.insertBefore(document.createTextNode(L.join('\n')), box.firstChild);
-}
-addEventListener('load',()=>{setTimeout(fzDiag,600);setTimeout(fzDiag,1800);});
-addEventListener('resize',()=>setTimeout(fzDiag,200));
+const APP_VERSION='v35';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
