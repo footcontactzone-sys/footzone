@@ -1306,7 +1306,7 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;}
 .ic-chev-left{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 18l-6-6 6-6'/%3E%3C/svg%3E");}
 
 /* ---------- v27/v28 : glissement sur la barre du bas ---------- */
-.navbar{touch-action:pan-y;}
+.navbar{touch-action:none;overscroll-behavior:contain;}
 .navbar .navbtn{position:relative;z-index:1;transition:color .22s ease;}
 .navbar .navbtn.active{background:transparent!important;}
 .nav-pill{position:absolute;top:6px;bottom:6px;left:0;width:0;z-index:0;opacity:0;pointer-events:none;
@@ -1557,7 +1557,7 @@ const FRESH_AUTH=/access_token=/.test(location.hash)&&!/type=recovery/.test(loca
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const state = {
-  sheetNav: [],
+  sheetNav: [], navDrag: 0,
   me:null, profile:null,
   tab:'carte', mapFilter:'all', feed:'tout', rankTab:'joueurs', rankScale:'national',
   terrains:[], posts:[], myLikes:new Set(), myReposts:new Set(),
@@ -4731,8 +4731,9 @@ function initNavDrag(){
     if(!d.on){
       // on n'enclenche qu'au-delà de 8 px, et surtout en horizontal : une simple
       // touche reste une touche, et un glissement vers le haut ne déclenche rien
-      if(Math.abs(t.clientX-d.x)<8||Math.abs(t.clientX-d.x)<Math.abs(t.clientY-d.y))return;
-      d.on=true;
+      const ax=Math.abs(t.clientX-d.x), ay=Math.abs(t.clientY-d.y);
+      if(ax<8||ax<ay*.6)return;          // en biais ça compte encore comme horizontal
+      d.on=true; state.navDrag=1;
     }
     e.preventDefault();
     d.pos=posAt(t.clientX);
@@ -4741,6 +4742,7 @@ function initNavDrag(){
   const stop=()=>{
     if(!d)return; const D=d; d=null;
     if(!D.on)return;                     // simple touche : le clic normal fait le travail
+    setTimeout(()=>state.navDrag=0,400);
     navPgEnd(D.pos);
     // après un glissement, le navigateur envoie un clic sur l'icône de départ :
     // il ramènerait à la page qu'on vient de quitter, on l'annule
@@ -7058,7 +7060,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v28';
+const APP_VERSION='v29';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
@@ -7549,7 +7551,8 @@ function attachPullToRefresh(scr,tab){
   if(!scr||scr._ptr)return; scr._ptr=1;
   let y0=null,dist=0,top=0,busy=false; const MAX=118,TRIG=74;
   scr.addEventListener('touchstart',e=>{
-    y0=null; if(busy||scr.scrollTop>2||e.touches.length!==1||$('.sheet.show'))return;
+    y0=null; if(busy||state.navDrag||scr.scrollTop>2||e.touches.length!==1||$('.sheet.show'))return;
+    if(e.target.closest('.navbar'))return;
     y0=e.touches[0].clientY; dist=0;
     const bar=$(`#screen-${tab} .zone-bar`), A=$('#app').getBoundingClientRect();
     top=Math.max(0,(bar?bar.getBoundingClientRect().bottom:A.top+60)-A.top);
