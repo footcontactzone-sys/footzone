@@ -1305,9 +1305,17 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;}
 .back-btn{margin-right:2px;}
 .ic-chev-left{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 18l-6-6 6-6'/%3E%3C/svg%3E");}
 
-/* ---------- v27 : glissement sur la barre du bas ---------- */
+/* ---------- v27/v28 : glissement sur la barre du bas ---------- */
 .navbar{touch-action:pan-y;}
-.navbar .navbtn{transition:background .18s ease,color .18s ease,transform .18s ease;}
+.navbar .navbtn{position:relative;z-index:1;transition:color .22s ease;}
+.navbar .navbtn.active{background:transparent!important;}
+.nav-pill{position:absolute;top:6px;bottom:6px;left:0;width:0;z-index:0;opacity:0;pointer-events:none;
+  border-radius:22px;background:rgba(255,255,255,.13);
+  transform:translate3d(0,0,0);
+  transition:transform .34s cubic-bezier(.22,.9,.26,1),width .34s cubic-bezier(.22,.9,.26,1),opacity .2s ease;}
+.nav-pill.on{opacity:1;}
+.nav-pill.drag{transition:opacity .2s ease;}
+@media (prefers-reduced-motion:reduce){.nav-pill{transition:opacity .2s ease;}}
 </style>
 </head>
 <body>
@@ -4625,6 +4633,7 @@ function showTabFast(btn){
   $all('.screen').forEach(s=>s.classList.remove('active'));
   $('#screen-'+t).classList.add('active');
   if(t!=='scroll')scPauseAll();
+  navPillSync();
 }
 // chargement des données : réservé à la page sur laquelle on s'arrête
 function loadTab(t){
@@ -4645,17 +4654,77 @@ $all('.navbtn[data-tab]').forEach(btn=>{
    données attend qu'on s'arrête (sinon 7 pages se chargeraient
    pour un seul glissement).
    ========================================================= */
+/* ---------- la bulle qui entoure l'icône active ---------- */
+function navPillEl(){
+  let p=$('.nav-pill'); if(p)return p;
+  const bar=$('.navbar'); if(!bar)return null;
+  p=document.createElement('div'); p.className='nav-pill'; bar.insertBefore(p,bar.firstChild);
+  return p;
+}
+// pos est un numéro d'onglet à virgule : 2.4 place la bulle entre la 3e et la 4e icône
+function navPillAt(pos,suivre){
+  const p=navPillEl(), bs=$all('.navbar .navbtn'); if(!p||!bs.length)return;
+  const bar=$('.navbar').getBoundingClientRect();
+  const a=Math.max(0,Math.min(bs.length-1,Math.floor(pos))), b=Math.min(bs.length-1,a+1), f=Math.max(0,Math.min(1,pos-a));
+  const ra=bs[a].getBoundingClientRect(), rb=bs[b].getBoundingClientRect();
+  p.classList.toggle('drag',!!suivre);          // pendant le glissement : collée au doigt
+  p.style.width=(ra.width+(rb.width-ra.width)*f)+'px';
+  p.style.transform='translate3d('+((ra.left-bar.left)+(rb.left-ra.left)*f)+'px,0,0)';
+  p.classList.add('on');
+}
+function navPillSync(){const i=TAB_ORDER.indexOf(state.tab); if(i>=0)navPillAt(i,false);}
+
+/* ---------- les deux pages pendant le glissement ---------- */
+let navPg=null;
+function navPgClear(el){if(!el)return;el.style.transition='';el.style.transform='';el.style.willChange='';el.classList.remove('pager-peek');el.style.top='';el.style.height='';}
+function navPgTo(pos){
+  const n=TAB_ORDER.length, W=$('#app').clientWidth;
+  const a=Math.max(0,Math.min(n-1,Math.floor(pos))), f=Math.max(0,Math.min(1,pos-a)), bi=Math.min(n-1,a+1);
+  if(!navPg||navPg.a!==a||navPg.b!==bi){
+    if(navPg){navPgClear(navPg.cur);navPgClear(navPg.next);}
+    const btn=$('.navbtn[data-tab="'+TAB_ORDER[a]+'"]');
+    if(btn&&state.tab!==TAB_ORDER[a]){showTabFast(btn);buzz(4);}
+    const cur=$('#screen-'+TAB_ORDER[a]), next=bi!==a?$('#screen-'+TAB_ORDER[bi]):null;
+    if(next){next.classList.add('pager-peek');next.style.top=cur.offsetTop+'px';next.style.height=cur.offsetHeight+'px';next.style.willChange='transform';
+      if(TAB_ORDER[bi]==='carte'&&map)setTimeout(()=>map.invalidateSize(),0);}
+    cur.style.willChange='transform'; cur.style.transition=''; if(next)next.style.transition='';
+    navPg={a,b:bi,cur,next};
+  }
+  navPg.cur.style.transform='translate3d('+(-f*W)+'px,0,0)';
+  if(navPg.next)navPg.next.style.transform='translate3d('+((1-f)*W)+'px,0,0)';
+}
+function navPgEnd(pos){
+  const n=TAB_ORDER.length, W=$('#app').clientWidth;
+  const cible=Math.max(0,Math.min(n-1,Math.round(pos)));
+  navPillAt(cible,false);                         // la bulle glisse vers sa place
+  if(!navPg){loadTab(state.tab);return;}
+  const S=navPg; navPg=null;
+  const bascule=cible!==S.a&&!!S.next;            // on part vers la page suivante
+  const ease='transform .34s cubic-bezier(.22,.9,.26,1)';
+  S.cur.style.transition=ease; if(S.next)S.next.style.transition=ease;
+  requestAnimationFrame(()=>{
+    S.cur.style.transform=bascule?'translate3d('+(-W)+'px,0,0)':'translate3d(0,0,0)';
+    if(S.next)S.next.style.transform=bascule?'translate3d(0,0,0)':'translate3d('+W+'px,0,0)';
+  });
+  setTimeout(()=>{
+    if(bascule){const b=$('.navbtn[data-tab="'+TAB_ORDER[cible]+'"]'); if(b)showTabFast(b);}
+    navPgClear(S.cur); navPgClear(S.next);
+    loadTab(state.tab); buzz(6);
+  },350);
+}
 function initNavDrag(){
   const bar=$('.navbar'); if(!bar)return;
   let d=null;
-  const btnAt=x=>{for(const r of d.rects)if(x>=r.l&&x<=r.r)return r.b;
-    return x<d.rects[0].l?d.rects[0].b:d.rects[d.rects.length-1].b;};
+  // chaque centre d'icône vaut un numéro d'onglet rond : entre deux, on interpole
+  const posAt=x=>{const c=d.cent;
+    if(x<=c[0])return 0; if(x>=c[c.length-1])return c.length-1;
+    for(let i=0;i<c.length-1;i++)if(x<=c[i+1])return i+(x-c[i])/(c[i+1]-c[i]);
+    return c.length-1;};
   bar.addEventListener('touchstart',e=>{
-    d=null; if(e.touches.length!==1)return;
-    const t=e.touches[0], btns=$all('.navbar .navbtn');
-    if(!btns.length)return;
-    d={x:t.clientX,y:t.clientY,on:false,
-       rects:btns.map(b=>{const c=b.getBoundingClientRect();return {b,l:c.left,r:c.right};})};
+    d=null; if(e.touches.length!==1||$('.sheet.show'))return;
+    const t=e.touches[0], btns=$all('.navbar .navbtn'); if(!btns.length)return;
+    d={x:t.clientX,y:t.clientY,on:false,pos:TAB_ORDER.indexOf(state.tab),
+       cent:btns.map(b=>{const c=b.getBoundingClientRect();return c.left+c.width/2;})};
   },{passive:true});
   bar.addEventListener('touchmove',e=>{
     if(!d)return; const t=e.touches[0];
@@ -4666,14 +4735,13 @@ function initNavDrag(){
       d.on=true;
     }
     e.preventDefault();
-    const b=btnAt(t.clientX);
-    if(b&&!b.classList.contains('active')){showTabFast(b);buzz(5);
-      clearTimeout(d.tm); d.tm=setTimeout(()=>loadTab(state.tab),140);}
+    d.pos=posAt(t.clientX);
+    navPgTo(d.pos); navPillAt(d.pos,true);
   },{passive:false});
   const stop=()=>{
     if(!d)return; const D=d; d=null;
     if(!D.on)return;                     // simple touche : le clic normal fait le travail
-    clearTimeout(D.tm); loadTab(state.tab);
+    navPgEnd(D.pos);
     // après un glissement, le navigateur envoie un clic sur l'icône de départ :
     // il ramènerait à la page qu'on vient de quitter, on l'annule
     const kill=ev=>{ev.stopPropagation();ev.preventDefault();};
@@ -4682,6 +4750,8 @@ function initNavDrag(){
   };
   bar.addEventListener('touchend',stop,{passive:true});
   bar.addEventListener('touchcancel',stop,{passive:true});
+  navPillSync(); setTimeout(navPillSync,200);
+  window.addEventListener('resize',()=>setTimeout(navPillSync,150));
 }
 $('#fabBtn').addEventListener('click',()=>{
   if(state.tab==='messages')openNewMsg(); else if(state.tab==='carte')startPin(); else if(state.tab==='scroll')newClip(); else openCompose();
@@ -6988,7 +7058,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v27';
+const APP_VERSION='v28';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
