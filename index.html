@@ -1400,6 +1400,10 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;}
 #asChips::-webkit-scrollbar{display:none;}
 #asChips .pill{flex-shrink:0;white-space:nowrap;}
 .sheet.sized #asLog{min-height:120px!important;}
+/* v38 vidéos au clic */
+.emb-load{width:100%;min-height:150px;border:1px dashed var(--border);border-radius:10px;background:var(--cell);color:var(--text-dim);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px;font-family:inherit;font-size:12.5px;line-height:1.4;text-align:center;}
+.emb-load .ic{font-size:26px;color:var(--accent);}
+.emb-load b{color:var(--text);font-size:14.5px;}
 </style>
 </head>
 <body>
@@ -1662,6 +1666,7 @@ function errText(err){
   if(/duplicate key|already exists/i.test(m))return 'C\'est déjà fait';
   if(/does not exist|schema cache|Could not find|relation|column/i.test(m))return 'Cette fonction n\'est pas encore disponible';
   if(/payload too large|exceeded|too large/i.test(m))return 'Fichier trop lourd';
+  if(/fz_trop_rapide/.test(m))return 'Doucement : attends un peu avant de publier à nouveau';
   // nos propres messages (en français, sans code) passent tels quels ; le reste devient un message simple
   if(m&&m.length<140&&!/[{}"<>_]|\b(the|is|not|of|for|function|violates|invalid|error|null|undefined|status|code)\b/i.test(m))return m;
   return 'Petit souci technique, réessaie dans un instant';
@@ -1791,6 +1796,7 @@ function openPrivacy(){
       <div class="card" style="padding:12px;"><b style="color:var(--text);">Mesure d'audience anonyme</b><br>Si tu l'acceptes, l'appli compte les ouvertures de terrains et de zones avec seulement le lieu, le jour et l'heure, sans ton compte ni aucun identifiant. Désactivée pour les moins de 15 ans.
         <button class="pill ${on?'active':''}" style="width:100%;justify-content:center;margin-top:10px;${on?greenBtn:''}" onclick="setConsent(${!on});openPrivacy()">${on?'<i class="ic ic-check"></i> Activée — désactiver':'Activer la mesure anonyme'}</button></div>
       <div class="card" style="padding:12px;"><b style="color:var(--text);">Statistiques et partenaires</b><br>FootZone peut vendre des statistiques de fréquentation (par exemple « terrains les plus fréquentés le samedi à Lyon ») à des villes, des clubs ou des marques. Ce sont uniquement des chiffres regroupant au moins 10 personnes : aucune donnée personnelle n'est jamais vendue. Les annonces sont choisies selon la zone, sans suivi de ta navigation.</div>
+      <div class="card" style="padding:12px;"><b style="color:var(--text);">Cookies</b><br>FootZone n'utilise pas de cookies publicitaires. Les vidéos TikTok, Instagram, X et YouTube ne se chargent que si tu touches « Afficher la vidéo » : ces sites peuvent alors déposer leurs propres cookies.</div>
       <div class="card" style="padding:12px;"><b style="color:var(--text);">Tes droits</b><br>Tu peux consulter, corriger ou supprimer tes données à tout moment.${CONTACT_EMAIL?` Contact : <a style="color:var(--accent);" href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>.`:''}
         ${uid()?`<button class="pill" style="width:100%;justify-content:center;margin-top:10px;color:var(--red);" onclick="deleteAccount()">Supprimer mon compte et mes données</button>`:''}</div>
       <div class="card" style="padding:12px;"><b style="color:var(--text);">Ce que voient les autres joueurs</b><br>Ton pseudo, ta photo, ta ville, ton poste, tes points, ton pourcentage de confiance et ta fiabilité. Jamais ton email, ton âge ni tes réglages.</div>
@@ -5770,9 +5776,14 @@ function hashtagOf(nom){
   return (nom||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[·\-–'’]/g,' ')
     .split(/\s+/).filter(Boolean).map(w=>w[0].toUpperCase()+w.slice(1).toLowerCase()).join('').replace(/[^A-Za-z0-9]/g,'');
 }
+const EMB_OK=/^https:\/\/(www\.youtube-nocookie\.com|www\.tiktok\.com|www\.instagram\.com|platform\.twitter\.com)\//;
+function loadEmbed(btn){const src=btn.dataset.src||'';if(!EMB_OK.test(src))return;
+  const f=document.createElement('iframe');f.src=src;f.loading='lazy';f.allowFullscreen=true;
+  f.setAttribute('allow','encrypted-media; picture-in-picture; fullscreen');
+  f.style.cssText=`width:100%;height:${+btn.dataset.h||300}px;border:0;border-radius:10px;background:#000;`;btn.replaceWith(f);}
 function embedOf(url){
   let m;
-  if((m=url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/)))return {p:'YouTube',src:`https://www.youtube.com/embed/${m[1]}`,h:220};
+  if((m=url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/)))return {p:'YouTube',src:`https://www.youtube-nocookie.com/embed/${m[1]}`,h:220};
   if((m=url.match(/tiktok\.com\/@[\w.-]+\/(?:video|photo)\/(\d+)/)))return {p:'TikTok',src:`https://www.tiktok.com/embed/v2/${m[1]}`,h:580};
   if((m=url.match(/instagram\.com\/(?:[\w.]+\/)?(?:p|reel|reels|tv)\/([\w-]+)/)))return {p:'Instagram',src:`https://www.instagram.com/p/${m[1]}/embed`,h:560};
   if((m=url.match(/(?:twitter|x)\.com\/\w+\/status\/(\d+)/)))return {p:'X',src:`https://platform.twitter.com/embed/Tweet.html?id=${m[1]}&theme=dark&dnt=true`,h:460};
@@ -5802,7 +5813,7 @@ async function renderMedias(t,body){
     <div style="display:flex;flex-direction:column;gap:10px;">${liens.map(l=>{const e=embedOf(l.url);return `<div class="card" style="padding:8px;overflow:hidden;">
       <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-faint);padding:2px 4px 6px;">
         <span>${e.p}</span><span>${l.user_id===uid()?`<span style="cursor:pointer;" onclick="deleteLien('${l.id}')"><i class="ic ic-trash"></i></span>`:''}</span></div>
-      ${e.src?`<iframe src="${esc(e.src)}" loading="lazy" style="width:100%;height:${e.h}px;border:0;border-radius:10px;background:#000;" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`:''}
+      ${e.src?`<button type="button" class="emb-load" data-src="${esc(e.src)}" data-h="${e.h}" onclick="loadEmbed(this)"><i class="ic ic-play"></i><b>Afficher la vidéo</b><span>Elle se charge depuis ${e.p}, qui peut déposer ses propres cookies.</span></button>`:''}
       <a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" style="display:block;font-size:12.5px;color:var(--accent);padding:6px 4px 2px;text-decoration:none;">Ouvrir sur ${e.p} ↗</a>
     </div>`;}).join('')||'<div style="color:var(--text-faint);font-size:13px;">Aucune vidéo pour l\'instant.</div>'}</div>
     ${ln.error?'<div style="font-size:12px;color:var(--amber);margin-top:6px;">Lance la migration « terrain_liens » dans Supabase pour activer les vidéos.</div>':''}
@@ -7221,7 +7232,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v37';
+const APP_VERSION='v38';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
