@@ -1408,6 +1408,8 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;}
 html.barre-nav #app{bottom:var(--cache-bas,0px);}
 html.barre-nav .navbar{bottom:10px;}
 #fzDiag{position:fixed;left:8px;right:8px;top:calc(8px + var(--sat,0px));z-index:9999;background:#111;color:#0f0;font:11px/1.45 ui-monospace,Menlo,monospace;padding:8px 10px;border-radius:10px;border:1px solid #333;white-space:pre-wrap;}
+/* v42 : appli installée, bas de l'écran non affiché par iOS */
+html.courte{--sab:0px;}
 </style>
 </head>
 <body>
@@ -6561,7 +6563,7 @@ function fitViewport(){
   const R=document.documentElement, E=R.style;
   const clavier=petit-h>90;
   R.classList.toggle('clavier',clavier);
-  if(clavier){E.setProperty('--app-h',h+'px');R.classList.remove('plein');}
+  if(clavier){E.setProperty('--app-h',h+'px');R.classList.remove('plein','courte');}
   else{
     // Sur iPhone, une fois l'appli installée, le petit viewport (dvh, svh,
     // innerHeight) vaut la hauteur de l'écran MOINS la barre d'état, alors que
@@ -6570,8 +6572,8 @@ function fitViewport(){
     const iphone=/iPhone|iPod/.test(navigator.platform||'')||/iPhone|iPod/.test(navigator.userAgent);
     const ecran=iphone&&appliInstallee()?(innerWidth>innerHeight?Math.min(screen.width,screen.height):Math.max(screen.width,screen.height)):0;
     const grand=Math.max(mesureH('100lvh')||0,mesureH('100vh')||0,ecran);
-    if(appliInstallee()&&grand>petit+8){E.setProperty('--app-h',grand+'px');R.classList.add('plein');}
-    else{E.removeProperty('--app-h');R.classList.remove('plein');}
+    E.removeProperty('--app-h');R.classList.remove('plein');
+    R.classList.toggle('courte',appliInstallee()&&grand>petit+8);
   }
   // iOS 26 : la barre du navigateur flotte au-dessus de la page et cache le bas.
   // On compare le bas de la page (layout) au bas de ce qui est vraiment visible.
@@ -7265,7 +7267,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v41';
+const APP_VERSION='v42';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
