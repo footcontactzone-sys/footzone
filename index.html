@@ -1404,6 +1404,10 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;}
 .emb-load{width:100%;min-height:150px;border:1px dashed var(--border);border-radius:10px;background:var(--cell);color:var(--text-dim);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px;font-family:inherit;font-size:12.5px;line-height:1.4;text-align:center;}
 .emb-load .ic{font-size:26px;color:var(--accent);}
 .emb-load b{color:var(--text);font-size:14.5px;}
+/* v40 : barre flottante du navigateur (iOS 26) */
+html.barre-nav #app{bottom:var(--cache-bas,0px);}
+html.barre-nav .navbar{bottom:10px;}
+#fzDiag{position:fixed;left:8px;right:8px;top:calc(8px + var(--sat,0px));z-index:9999;background:#111;color:#0f0;font:11px/1.45 ui-monospace,Menlo,monospace;padding:8px 10px;border-radius:10px;border:1px solid #333;white-space:pre-wrap;}
 </style>
 </head>
 <body>
@@ -6533,6 +6537,21 @@ function mesureH(unite){
   document.body.appendChild(d);
   const v=Math.round(d.getBoundingClientRect().height); d.remove(); return v;
 }
+if(/[?&]diag=1/.test(location.search))window.FZ_DIAG=function(){
+  if(!document.body)return; let d=document.getElementById('fzDiag');
+  if(!d){d=document.createElement('div');d.id='fzDiag';d.onclick=()=>d.remove();document.body.appendChild(d);}
+  const vv=window.visualViewport,cs=getComputedStyle(document.documentElement);
+  const sab=mesureH('env(safe-area-inset-bottom)'),nb=document.querySelector('.navbar')?.getBoundingClientRect();
+  d.textContent=['FootZone '+(()=>{try{return APP_VERSION}catch(e){return ''}})()+' — touche pour fermer',
+   'écran '+screen.width+'x'+screen.height+'  installée='+appliInstallee(),
+   'innerHeight='+innerHeight+'  clientHeight='+document.documentElement.clientHeight,
+   'vv.height='+(vv?Math.round(vv.height):'-')+'  vv.offsetTop='+(vv?Math.round(vv.offsetTop):'-'),
+   'vh='+mesureH('100vh')+' dvh='+mesureH('100dvh')+' svh='+mesureH('100svh')+' lvh='+mesureH('100lvh'),
+   'safe-bas='+sab+'  cache-bas='+cs.getPropertyValue('--cache-bas').trim(),
+   'barre appli : haut='+(nb?Math.round(nb.top):'-')+' bas='+(nb?Math.round(nb.bottom):'-'),
+   navigator.userAgent.replace(/^Mozilla\/5.0 /,'').slice(0,120)].join('\n');
+};
+if(window.FZ_DIAG)setInterval(()=>{try{window.FZ_DIAG()}catch(e){}},1000);
 const appliInstallee=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 function fitViewport(){
   const vv=window.visualViewport;
@@ -6551,6 +6570,17 @@ function fitViewport(){
     if(appliInstallee()&&grand>petit+8){E.setProperty('--app-h',grand+'px');R.classList.add('plein');}
     else{E.removeProperty('--app-h');R.classList.remove('plein');}
   }
+  // iOS 26 : la barre du navigateur flotte au-dessus de la page et cache le bas.
+  // On compare le bas de la page (layout) au bas de ce qui est vraiment visible.
+  let cache=0;
+  if(!clavier&&!appliInstallee()){
+    const lay=document.documentElement.clientHeight||petit;
+    const vis=vv?(vv.offsetTop+vv.height):petit;
+    cache=Math.max(0,Math.round(lay-vis),Math.round(lay-(window.innerHeight||lay)));
+    if(cache<6||cache>160)cache=0;
+  }
+  E.setProperty('--cache-bas',cache+'px'); R.classList.toggle('barre-nav',cache>0);
+  if(window.FZ_DIAG)try{FZ_DIAG();}catch(e){}
   if(map)setTimeout(()=>map.invalidateSize(),60);
 }
 window.addEventListener('resize',fitViewport);
@@ -7232,7 +7262,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v39';
+const APP_VERSION='v40';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
