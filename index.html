@@ -6521,6 +6521,7 @@ $('#btnSettings').addEventListener('click',()=>{
         <button class="ios-row" onclick="openModeration()"><i class="ic ic-shield"></i><span>Modération (admin)</span><i class="ic ic-chevron chev"></i></button>
         <button class="ios-row" onclick="openRefImport()"><i class="ic ic-globe"></i><span>Recenser les terrains (admin)</span><i class="ic ic-chevron chev"></i></button>
         <button class="ios-row" onclick="adminRecalculerPoints()"><i class="ic ic-trophy"></i><span>Recalculer les points (admin)</span><i class="ic ic-chevron chev"></i></button>
+        <button class="ios-row" onclick="try{localStorage.setItem('fz_diag',localStorage.getItem('fz_diag')==='1'?'0':'1')}catch(e){};location.reload()"><i class="ic ic-phone"></i><span>Mesures d'écran (admin) : ${(()=>{try{return localStorage.getItem('fz_diag')==='1'}catch(e){return false}})()?'activées':'désactivées'}</span><i class="ic ic-chevron chev"></i></button>
       </div>`:''}
       <div class="ios-group"><button class="ios-row danger" onclick="logout()">Déconnexion</button></div>
     </div>`);
@@ -6537,7 +6538,7 @@ function mesureH(unite){
   document.body.appendChild(d);
   const v=Math.round(d.getBoundingClientRect().height); d.remove(); return v;
 }
-if(/[?&]diag=1/.test(location.search))window.FZ_DIAG=function(){
+if(/[?&]diag=1/.test(location.search)||(()=>{try{return localStorage.getItem('fz_diag')==='1'}catch(e){return false}})())window.FZ_DIAG=function(){
   if(!document.body)return; let d=document.getElementById('fzDiag');
   if(!d){d=document.createElement('div');d.id='fzDiag';d.onclick=()=>d.remove();document.body.appendChild(d);}
   const vv=window.visualViewport,cs=getComputedStyle(document.documentElement);
@@ -6566,7 +6567,9 @@ function fitViewport(){
     // innerHeight) vaut la hauteur de l'écran MOINS la barre d'état, alors que
     // la fenêtre commence quand même tout en haut : l'appli se retrouvait trop
     // courte et laissait une bande vide en bas. Le grand viewport, lui, est juste.
-    const grand=mesureH('100lvh')||mesureH('100vh');
+    const iphone=/iPhone|iPod/.test(navigator.platform||'')||/iPhone|iPod/.test(navigator.userAgent);
+    const ecran=iphone&&appliInstallee()?(innerWidth>innerHeight?Math.min(screen.width,screen.height):Math.max(screen.width,screen.height)):0;
+    const grand=Math.max(mesureH('100lvh')||0,mesureH('100vh')||0,ecran);
     if(appliInstallee()&&grand>petit+8){E.setProperty('--app-h',grand+'px');R.classList.add('plein');}
     else{E.removeProperty('--app-h');R.classList.remove('plein');}
   }
@@ -7262,7 +7265,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v40';
+const APP_VERSION='v41';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
