@@ -1443,8 +1443,8 @@ html.courte{--sab:0px;}
       <div class="seg" id="tabSignup">Inscription</div>
     </div>
     <div id="signupFields" style="display:none;flex-direction:column;gap:10px;margin-bottom:10px;">
-      <input id="auPseudo" class="auth-in" placeholder="Prénom ou pseudo (ex : Karim D.)" maxlength="40">
-      <input id="auHandle" class="auth-in" placeholder="Identifiant unique (ex : karimdu69)" maxlength="24" autocapitalize="none">
+      <input id="auPseudo" class="auth-in" placeholder="Prénom ou pseudo (ex : Alex M.)" maxlength="40">
+      <input id="auHandle" class="auth-in" placeholder="Identifiant unique (ex : alex_foot)" maxlength="24" autocapitalize="none">
       <div style="font-size:13px;color:var(--text-dim);display:flex;flex-direction:column;gap:8px;padding:2px 2px 0;">
         <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="auAge" value="15"> J'ai 15 ans ou plus</label>
         <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="auAge" value="moins"> J'ai moins de 15 ans et l'accord d'un parent</label>
@@ -2677,7 +2677,7 @@ function openOnboarding(){
     <div class="section-pad"><div style="font-weight:800;font-size:16px;">Bienvenue sur FootZone <i class="ic ic-ball"></i></div><div style="font-size:13px;color:var(--text-dim);margin-top:4px;">Encore une étape pour finaliser ton profil.</div></div>
     <div class="sheet-body section-pad" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
       <input id="obPseudo" maxlength="40" value="${esc(p.pseudo)}" placeholder="Pseudo" style="${inputStyle}">
-      <input id="obHandle" maxlength="24" value="${esc(/^user_/.test(p.handle||'')?'':p.handle)}" placeholder="Identifiant unique (ex : karimdu69)" autocapitalize="none" style="${inputStyle}">
+      <input id="obHandle" maxlength="24" value="${esc(/^user_/.test(p.handle||'')?'':p.handle)}" placeholder="Identifiant unique (ex : alex_foot)" autocapitalize="none" style="${inputStyle}">
       <div style="font-size:13px;color:var(--text-dim);display:flex;flex-direction:column;gap:8px;">
         <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="obAge" value="15"> J'ai 15 ans ou plus</label>
         <label style="display:flex;gap:8px;align-items:center;"><input type="radio" name="obAge" value="moins"> J'ai moins de 15 ans et l'accord d'un parent</label>
@@ -7267,7 +7267,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v42';
+const APP_VERSION='v43';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
