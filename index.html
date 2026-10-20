@@ -1410,6 +1410,8 @@ html.barre-nav .navbar{bottom:10px;}
 #fzDiag{position:fixed;left:8px;right:8px;top:calc(8px + var(--sat,0px));z-index:9999;background:#111;color:#0f0;font:11px/1.45 ui-monospace,Menlo,monospace;padding:8px 10px;border-radius:10px;border:1px solid #333;white-space:pre-wrap;}
 /* v42 : appli installée, bas de l'écran non affiché par iOS */
 html.courte{--sab:0px;}
+/* v44 : rien ne passe devant ce que montre la visite */
+html.coach-on #consentBar,html.coach-on #installNudge,html.coach-on #momentAd,html.coach-on .as-hint{visibility:hidden!important;}
 </style>
 </head>
 <body>
@@ -6794,6 +6796,7 @@ const COACH=[
 let CT=null;
 function startCoachTour(){
   closeSheets(); document.querySelector('#coach')?.remove();
+  document.documentElement.classList.add('coach-on');
   CT={i:-1}; const c=document.createElement('div'); c.id='coach'; c.className='coach';
   c.innerHTML=`<div class="coach-hole" id="coachHole"></div><div class="coach-tip" id="coachTip"></div>`;
   $('#app').appendChild(c); coachGo(0);
@@ -6825,7 +6828,7 @@ function coachGo(i){
   },state.tab!==st.tab?350:30);
 }
 function coachQuit(){confirmBox('Quitter la visite ?','Tu pourras la relancer quand tu veux depuis l\'assistant (l\'étoile dans la barre de recherche).','Oui, quitter','Non, je continue',()=>coachEnd(false));}
-function coachEnd(done){$('#coach')?.remove();CT=null;lsSet('fz_tour_done','1');if(done)toast('Visite terminée. Bon match !');}
+function coachEnd(done){$('#coach')?.remove();CT=null;document.documentElement.classList.remove('coach-on');lsSet('fz_tour_done','1');if(done)toast('Visite terminée. Bon match !');}
 window.addEventListener('resize',()=>{if(CT)coachGo(CT.i);});
 const startTour=()=>startCoachTour();   // ancien nom utilisé ailleurs
 
@@ -7267,7 +7270,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v43';
+const APP_VERSION='v44';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
