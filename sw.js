@@ -1,7 +1,7 @@
 // FootZone : met en cache l'appli pour qu'elle s'ouvre vite et soit installable.
 // Les données (Supabase, cartes, OpenStreetMap) ne sont jamais mises en cache ici.
-const CACHE = 'footzone-v50';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192-v7.png', './icon-512-v7.png', './apple-touch-icon-v7.png', './favicon-32-v6.png', './saira-stencil-v1.woff2'];
+const CACHE = 'footzone-v51';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192-v8.png', './icon-512-v8.png', './apple-touch-icon-v8.png', './favicon-32-v6.png', './saira-stencil-v1.woff2'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => null)))).then(() => self.skipWaiting()));
 });
@@ -22,7 +22,7 @@ self.addEventListener('push', e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (err) { d = { title: 'FootZone', body: e.data ? e.data.text() : '' }; }
   e.waitUntil(self.registration.showNotification(d.title || 'FootZone', {
-    body: d.body || '', icon: './icon-192-v7.png', badge: './icon-192-v7.png',
+    body: d.body || '', icon: './icon-192-v8.png', badge: './icon-192-v8.png',
     tag: d.tag || undefined, renotify: !!d.tag, data: { url: d.url || './' }
   }));
 });

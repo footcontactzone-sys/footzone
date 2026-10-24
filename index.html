@@ -24,7 +24,7 @@
 <link rel="preload" href="saira-stencil-v1.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0c0f14">
-<link rel="apple-touch-icon" href="apple-touch-icon-v7.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-v8.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32-v6.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
@@ -2436,7 +2436,7 @@ function subscribeNotifs(){
   state.notifChannel=sb.channel('mes-notifs').on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+uid()},p=>{
     const n=p.new; state.notifs.unshift(n); updateBells(); toast(n.titre);
     if(document.hidden&&lsGet('fz_push')!=='oui'&&lsGet('fz_notif_nav')==='oui'&&'Notification' in window&&Notification.permission==='granted'){
-      const show=r=>r?r.showNotification(n.titre,{body:n.corps||'',icon:'icon-192-v7.png',badge:'favicon-32-v6.png',tag:'fz-'+n.id}):new Notification(n.titre,{body:n.corps||'',icon:'icon-192-v7.png'});
+      const show=r=>r?r.showNotification(n.titre,{body:n.corps||'',icon:'icon-192-v8.png',badge:'favicon-32-v6.png',tag:'fz-'+n.id}):new Notification(n.titre,{body:n.corps||'',icon:'icon-192-v8.png'});
       (navigator.serviceWorker?.getRegistration?.()||Promise.resolve(null)).then(show).catch(()=>{});
     }
   }).subscribe();
@@ -7272,7 +7272,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v50';
+const APP_VERSION='v51';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
