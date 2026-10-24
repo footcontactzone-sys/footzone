@@ -1,7 +1,7 @@
 // FootZone : met en cache l'appli pour qu'elle s'ouvre vite et soit installable.
 // Les données (Supabase, cartes, OpenStreetMap) ne sont jamais mises en cache ici.
-const CACHE = 'footzone-v46';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192-v5.png', './icon-512-v5.png', './apple-touch-icon-v5.png', './favicon-32-v5.png', './saira-stencil-v1.woff2'];
+const CACHE = 'footzone-v47';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192-v5.png', './icon-512-v5.png', './apple-touch-icon-v5.png', './favicon-32-v6.png', './saira-stencil-v1.woff2'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => null)))).then(() => self.skipWaiting()));
 });
