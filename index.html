@@ -25,7 +25,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0c0f14">
 <link rel="apple-touch-icon" href="apple-touch-icon-v5.png">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32-v5.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32-v6.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
 <style>
@@ -1417,7 +1417,9 @@ html.coach-on #consentBar,html.coach-on #installNudge,html.coach-on #momentAd,ht
 @font-face{font-family:'Saira Stencil One';src:url(saira-stencil-v1.woff2) format('woff2');font-display:swap;}
 .fz-word,#mapLogo h1,.ia-word{font-family:'Saira Stencil One',Barlow,sans-serif!important;font-weight:400!important;font-style:normal!important;letter-spacing:1px!important;}
 .fz-word span{color:#22c55e;}
-.zone-title .brand-mark,#mapLogo .brand-mark{width:22px;height:29px;}
+.zone-title .brand-mark,#mapLogo .brand-mark{width:20px;height:26px;}
+#mapLogo{gap:6px!important;}
+#mapLogo h1{font-size:20px!important;letter-spacing:.6px!important;}
 </style>
 </head>
 <body>
@@ -1425,7 +1427,7 @@ html.coach-on #consentBar,html.coach-on #installNudge,html.coach-on #momentAd,ht
   <pattern id="fzTonte" patternUnits="userSpaceOnUse" width="28" height="28"><rect width="14" height="28" fill="#22c55e"></rect><rect x="14" width="14" height="28" fill="#16a34a"></rect></pattern>
   <clipPath id="fzClip"><circle r="100"></circle></clipPath>
   <radialGradient id="fzRelief" cx="-0.35" cy="-0.4" r="1.3"><stop offset="0" stop-color="#fff" stop-opacity="0"></stop><stop offset="0.75" stop-color="#000" stop-opacity="0.06"></stop><stop offset="1" stop-color="#000" stop-opacity="0.3"></stop></radialGradient>
-  <mask id="fzCut" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"></rect><path d="M10 41 H35 M65 41 H90" stroke="#000" stroke-width="4.5"></path><circle cx="50" cy="41" r="15" fill="none" stroke="#000" stroke-width="3.6"></circle><path d="M50.00 35.60 L55.14 39.33 L53.17 45.37 L46.83 45.37 L44.86 39.33 Z" fill="#000"></path><path d="M50.00 35.60 L50.00 26.00 M55.14 39.33 L64.27 36.36 M53.17 45.37 L58.82 53.14 M46.83 45.37 L41.18 53.14 M44.86 39.33 L35.73 36.36" stroke="#000" stroke-width="1.8" fill="none"></path><path d="M56.82 31.62 L55.15 26.47 L59.52 23.29 L63.90 26.47 L62.23 31.62 Z M61.03 44.58 L65.41 41.41 L69.78 44.58 L68.11 49.73 L62.70 49.73 Z M50.00 52.60 L54.37 55.78 L52.70 60.92 L47.30 60.92 L45.63 55.78 Z M38.97 44.58 L37.30 49.73 L31.89 49.73 L30.22 44.58 L34.59 41.41 Z M43.18 31.62 L37.77 31.62 L36.10 26.47 L40.48 23.29 L44.85 26.47 Z" fill="#000" clip-path="url(#fzCutB)"></path></mask><clipPath id="fzCutB"><circle cx="50" cy="41" r="15"></circle></clipPath><mask id="fzCutS" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"></rect><path d="M10 41 H35 M65 41 H90" stroke="#000" stroke-width="4.5"></path><circle cx="50" cy="41" r="15" fill="none" stroke="#000" stroke-width="3.6"></circle><path d="M50.00 35.60 L55.14 39.33 L53.17 45.37 L46.83 45.37 L44.86 39.33 Z" fill="#000"></path></mask>
+  <mask id="fzCut" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"></rect><path d="M10 41 H35 M65 41 H90" stroke="#000" stroke-width="4.5"></path><circle cx="50" cy="41" r="15" fill="none" stroke="#000" stroke-width="3.6"></circle><path d="M50.00 35.60 L55.14 39.33 L53.17 45.37 L46.83 45.37 L44.86 39.33 Z" fill="#000"></path><path d="M50.00 35.60 L50.00 26.00 M55.14 39.33 L64.27 36.36 M53.17 45.37 L58.82 53.14 M46.83 45.37 L41.18 53.14 M44.86 39.33 L35.73 36.36" stroke="#000" stroke-width="1.8" fill="none"></path><path d="M56.82 31.62 L55.15 26.47 L59.52 23.29 L63.90 26.47 L62.23 31.62 Z M61.03 44.58 L65.41 41.41 L69.78 44.58 L68.11 49.73 L62.70 49.73 Z M50.00 52.60 L54.37 55.78 L52.70 60.92 L47.30 60.92 L45.63 55.78 Z M38.97 44.58 L37.30 49.73 L31.89 49.73 L30.22 44.58 L34.59 41.41 Z M43.18 31.62 L37.77 31.62 L36.10 26.47 L40.48 23.29 L44.85 26.47 Z" fill="#000" clip-path="url(#fzCutB)"></path></mask><clipPath id="fzCutB"><circle cx="50" cy="41" r="15"></circle></clipPath><mask id="fzCutS" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"></rect><path d="M10 41 H30 M70 41 H90" stroke="#000" stroke-width="4.5"></path><g transform="translate(50 41) scale(1.33) translate(-50 -41)"><circle cx="50" cy="41" r="15" fill="none" stroke="#000" stroke-width="3.4"></circle><path d="M50.00 35.60 L55.14 39.33 L53.17 45.37 L46.83 45.37 L44.86 39.33 Z" fill="#000"></path><path d="M50.00 35.60 L50.00 26.00 M55.14 39.33 L64.27 36.36 M53.17 45.37 L58.82 53.14 M46.83 45.37 L41.18 53.14 M44.86 39.33 L35.73 36.36" stroke="#000" stroke-width="2" fill="none"></path><path d="M56.82 31.62 L55.15 26.47 L59.52 23.29 L63.90 26.47 L62.23 31.62 Z M61.03 44.58 L65.41 41.41 L69.78 44.58 L68.11 49.73 L62.70 49.73 Z M50.00 52.60 L54.37 55.78 L52.70 60.92 L47.30 60.92 L45.63 55.78 Z M38.97 44.58 L37.30 49.73 L31.89 49.73 L30.22 44.58 L34.59 41.41 Z M43.18 31.62 L37.77 31.62 L36.10 26.47 L40.48 23.29 L44.85 26.47 Z" fill="#000" clip-path="url(#fzCutSB)"></path></g></mask><clipPath id="fzCutSB"><circle cx="50" cy="41" r="15"></circle></clipPath>
   <symbol id="fzLogo" viewBox="0 0 200 260"><g transform="translate(-30 4.4) scale(2.6)"><path d="M50 6 C29 6 15 21 15 41 C15 64 50 95 50 95 C50 95 85 64 85 41 C85 21 71 6 50 6 Z" fill="#22c55e" mask="url(#fzCut)"></path></g></symbol>
   <symbol id="fzLogoS" viewBox="0 0 200 260"><g transform="translate(-30 4.4) scale(2.6)"><path d="M50 6 C29 6 15 21 15 41 C15 64 50 95 50 95 C50 95 85 64 85 41 C85 21 71 6 50 6 Z" fill="#22c55e" mask="url(#fzCutS)"></path></g></symbol>
   <symbol id="fzSpeed" viewBox="-110 0 110 260"><g stroke="#22c55e" stroke-width="16" stroke-linecap="round"><line x1="-96" y1="62" x2="-14" y2="62"></line><line x1="-70" y1="112" x2="-12" y2="112"></line></g></symbol>
@@ -2436,7 +2438,7 @@ function subscribeNotifs(){
   state.notifChannel=sb.channel('mes-notifs').on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+uid()},p=>{
     const n=p.new; state.notifs.unshift(n); updateBells(); toast(n.titre);
     if(document.hidden&&lsGet('fz_push')!=='oui'&&lsGet('fz_notif_nav')==='oui'&&'Notification' in window&&Notification.permission==='granted'){
-      const show=r=>r?r.showNotification(n.titre,{body:n.corps||'',icon:'icon-192-v5.png',badge:'favicon-32-v5.png',tag:'fz-'+n.id}):new Notification(n.titre,{body:n.corps||'',icon:'icon-192-v5.png'});
+      const show=r=>r?r.showNotification(n.titre,{body:n.corps||'',icon:'icon-192-v5.png',badge:'favicon-32-v6.png',tag:'fz-'+n.id}):new Notification(n.titre,{body:n.corps||'',icon:'icon-192-v5.png'});
       (navigator.serviceWorker?.getRegistration?.()||Promise.resolve(null)).then(show).catch(()=>{});
     }
   }).subscribe();
@@ -7272,7 +7274,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v46';
+const APP_VERSION='v47';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
