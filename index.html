@@ -15,16 +15,17 @@
 <meta property="og:title" content="FootZone · Trouve ton terrain, complète ton équipe">
 <meta property="og:description" content="City stades, five, terrains de club et de fac : rejoins un match près de chez toi et grimpe au classement de ta ville.">
 <meta property="og:url" content="https://footzone.app/">
-<meta property="og:image" content="https://footzone.app/og-image.png">
+<meta property="og:image" content="https://footzone.app/og-image.png?v=4">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="fr_FR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://footzone.app/og-image.png">
+<meta name="twitter:image" content="https://footzone.app/og-image.png?v=4">
+<link rel="preload" href="saira-stencil-v1.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0c0f14">
-<link rel="apple-touch-icon" href="apple-touch-icon-v3.png">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32-v3.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-v4.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32-v4.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
 <style>
@@ -1412,6 +1413,11 @@ html.barre-nav .navbar{bottom:10px;}
 html.courte{--sab:0px;}
 /* v44 : rien ne passe devant ce que montre la visite */
 html.coach-on #consentBar,html.coach-on #installNudge,html.coach-on #momentAd,html.coach-on .as-hint{visibility:hidden!important;}
+/* v45 : logo épingle + pochoir */
+@font-face{font-family:'Saira Stencil One';src:url(saira-stencil-v1.woff2) format('woff2');font-display:swap;}
+.fz-word,#mapLogo h1,.ia-word{font-family:'Saira Stencil One',Barlow,sans-serif!important;font-weight:400!important;font-style:normal!important;letter-spacing:1px!important;}
+.fz-word span,#mapLogo h1 .z,.ia-word span{color:inherit!important;}
+.zone-title .brand-mark,#mapLogo .brand-mark{width:22px;height:29px;}
 </style>
 </head>
 <body>
@@ -1419,26 +1425,22 @@ html.coach-on #consentBar,html.coach-on #installNudge,html.coach-on #momentAd,ht
   <pattern id="fzTonte" patternUnits="userSpaceOnUse" width="28" height="28"><rect width="14" height="28" fill="#22c55e"></rect><rect x="14" width="14" height="28" fill="#16a34a"></rect></pattern>
   <clipPath id="fzClip"><circle r="100"></circle></clipPath>
   <radialGradient id="fzRelief" cx="-0.35" cy="-0.4" r="1.3"><stop offset="0" stop-color="#fff" stop-opacity="0"></stop><stop offset="0.75" stop-color="#000" stop-opacity="0.06"></stop><stop offset="1" stop-color="#000" stop-opacity="0.3"></stop></radialGradient>
-  <symbol id="fzLogo" viewBox="0 0 200 260">
-    <path d="M100 252 C88 236 18 156 18 98 A82 82 0 1 1 182 98 C182 156 112 236 100 252 Z" fill="url(#fzTonte)"></path>
-    <g transform="translate(100 98) scale(0.64)"><circle r="100" fill="#fff"></circle>
-    <g clip-path="url(#fzClip)" fill="#111"><polygon points="0,-30 28.5,-9.3 17.6,24.3 -17.6,24.3 -28.5,-9.3"></polygon><polygon points="75.2,-103.6 86.1,-70 57.6,-49.3 29.1,-70 40,-103.6"></polygon><polygon points="121.7,39.6 93.2,60.3 64.7,39.6 75.6,6 110.8,6"></polygon><polygon points="0,128 -28.5,107.3 -17.6,73.7 17.6,73.7 28.5,107.3"></polygon><polygon points="-121.7,39.6 -110.8,6 -75.6,6 -64.7,39.6 -93.2,60.3"></polygon><polygon points="-75.2,-103.6 -40,-103.6 -29.1,-70 -57.6,-49.3 -86.1,-70"></polygon></g>
-    <path d="M0,-30L0,-60L29.1,-70M0,-60L-29.1,-70M28.5,-9.3L57.1,-18.5L57.6,-49.3M57.1,-18.5L75.6,6M17.6,24.3L35.3,48.5L64.7,39.6M35.3,48.5L17.6,73.7M-17.6,24.3L-35.3,48.5L-17.6,73.7M-35.3,48.5L-64.7,39.6M-28.5,-9.3L-57.1,-18.5L-75.6,6M-57.1,-18.5L-57.6,-49.3" fill="none" stroke="#111" stroke-width="4" clip-path="url(#fzClip)"></path>
-    <circle r="100" fill="url(#fzRelief)"></circle><circle r="100" fill="none" stroke="#14284b" stroke-width="6"></circle></g>
-  </symbol>
+  <mask id="fzCut" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"></rect><line x1="10" y1="41" x2="90" y2="41" stroke="#000" stroke-width="4.5"></line><circle cx="50" cy="41" r="13" fill="none" stroke="#000" stroke-width="4.5" stroke-dasharray="17.4 3" transform="rotate(-37 50 41)"></circle><circle cx="50" cy="41" r="3.6" fill="#000"></circle></mask><mask id="fzCutS" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"></rect><line x1="10" y1="41" x2="90" y2="41" stroke="#000" stroke-width="4.5"></line><circle cx="50" cy="41" r="13" fill="none" stroke="#000" stroke-width="4.5"></circle><circle cx="50" cy="41" r="3.6" fill="#000"></circle></mask>
+  <symbol id="fzLogo" viewBox="0 0 200 260"><g transform="translate(-30 4.4) scale(2.6)"><path d="M50 6 C29 6 15 21 15 41 C15 64 50 95 50 95 C50 95 85 64 85 41 C85 21 71 6 50 6 Z" fill="#22c55e" mask="url(#fzCut)"></path></g></symbol>
+  <symbol id="fzLogoS" viewBox="0 0 200 260"><g transform="translate(-30 4.4) scale(2.6)"><path d="M50 6 C29 6 15 21 15 41 C15 64 50 95 50 95 C50 95 85 64 85 41 C85 21 71 6 50 6 Z" fill="#22c55e" mask="url(#fzCutS)"></path></g></symbol>
   <symbol id="fzSpeed" viewBox="-110 0 110 260"><g stroke="#22c55e" stroke-width="16" stroke-linecap="round"><line x1="-96" y1="62" x2="-14" y2="62"></line><line x1="-70" y1="112" x2="-12" y2="112"></line></g></symbol>
 </defs></svg>
 <div id="splash" style="position:fixed;inset:0;z-index:200;background:#0c0f14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .35s ease;">
-  <div style="display:flex;align-items:center;"><svg width="64" height="151" viewBox="-110 0 110 260" aria-hidden="true" class="fz-speed"><g stroke="#22c55e" stroke-width="16" stroke-linecap="round"><line x1="-96" y1="62" x2="-14" y2="62"></line><line x1="-70" y1="112" x2="-12" y2="112"></line></g></svg><svg width="104" height="135" viewBox="0 0 200 260" role="img" aria-label="FootZone" class="fz-drop"><use href="#fzLogo"></use></svg></div>
-  <div style="font-size:40px;font-weight:900;font-style:italic;letter-spacing:.5px;color:#fff;">FOOT<span style="color:#22c55e;">ZONE</span></div>
+  <div style="display:flex;align-items:center;"><svg width="104" height="135" viewBox="0 0 200 260" role="img" aria-label="FootZone" class="fz-drop"><use href="#fzLogo"></use></svg></div>
+  <div class="fz-word" style="font-size:44px;line-height:1;color:#f5f6f7;">FOOTZONE</div>
   <div style="font-size:14px;color:#a8adb4;">Trouve ton terrain. Complète ton équipe.</div>
 </div>
 <div id="app">
 
   <!-- ============ CONNEXION ============ -->
   <div id="authScreen" style="position:absolute;inset:0;z-index:100;background:var(--bg);display:none;flex-direction:column;justify-content:center;padding:24px;overflow-y:auto;">
-    <div style="display:flex;justify-content:center;align-items:center;"><svg width="40" height="95" viewBox="-110 0 110 260" aria-hidden="true"><g stroke="#22c55e" stroke-width="16" stroke-linecap="round"><line x1="-96" y1="62" x2="-14" y2="62"></line><line x1="-70" y1="112" x2="-12" y2="112"></line></g></svg><svg width="72" height="94" viewBox="0 0 200 260" role="img" aria-label="FootZone" ><use href="#fzLogo"></use></svg></div>
-    <div style="text-align:center;font-size:30px;font-weight:900;font-style:italic;letter-spacing:.5px;margin-top:8px;">FOOT<span style="color:var(--accent);">ZONE</span></div>
+    <div style="display:flex;justify-content:center;align-items:center;"><svg width="72" height="94" viewBox="0 0 200 260" role="img" aria-label="FootZone" ><use href="#fzLogo"></use></svg></div>
+    <div class="fz-word" style="text-align:center;font-size:32px;line-height:1;margin-top:10px;">FOOTZONE</div>
     <div style="text-align:center;color:var(--text-dim);font-size:13.5px;margin-top:4px;">Le foot amateur de ta ville</div>
     <div class="segrow" style="padding:22px 0 14px;">
       <div class="seg active" id="tabLogin">Connexion</div>
@@ -1466,7 +1468,7 @@ html.coach-on #consentBar,html.coach-on #installNudge,html.coach-on #momentAd,ht
   <div class="screen active" id="screen-carte">
     <div id="map" style="position:absolute;inset:0;background:#070d1a;z-index:0;"></div>
     <div id="mapTop" class="glass-island">
-      <div class="map-head"><div class="bb-side bb-left" id="mapHeadLeft"></div><button id="mapLogo" class="zone-title" aria-label="FootZone" onclick="clearSearch()"><svg class="brand-mark" viewBox="0 0 200 260" aria-hidden="true"><use href="#fzLogo"></use></svg><h1>FOOT<span class="z">ZONE</span></h1></button><div class="bb-side bb-right" id="mapHeadRight"></div></div>
+      <div class="map-head"><div class="bb-side bb-left" id="mapHeadLeft"></div><button id="mapLogo" class="zone-title" aria-label="FootZone" onclick="clearSearch()"><svg class="brand-mark" viewBox="0 0 200 260" aria-hidden="true"><use href="#fzLogoS"></use></svg><h1>FOOT<span class="z">ZONE</span></h1></button><div class="bb-side bb-right" id="mapHeadRight"></div></div>
       <div class="searchbar" style="margin-top:8px;"><span><i class="ic ic-search"></i></span><input id="mapSearch" placeholder="Chercher un terrain…" autocomplete="off" style="flex:1;font-size:14.5px;min-width:0;"><button class="sb-ai" id="aiCarte" type="button" aria-label="Demander à l'assistant" title="Demander à l'assistant" onclick="openAssistant()"><i class="ic ic-spark"></i></button></div>
       <div id="mapSearchResults" style="margin-top:6px;display:flex;flex-direction:column;gap:6px;max-height:calc(100vh - 330px);overflow-y:auto;"></div>
       <div class="map-filters">
@@ -2289,6 +2291,7 @@ async function toggleBravo(matchId,to){
   openRecap(matchId);
 }
 // Dessine le logo FootZone dans une image (pour le partage)
+async function stencilFont(){try{await document.fonts.load("60px 'Saira Stencil One'");}catch(e){}}
 function logoImage(){
   const sym=document.getElementById('fzLogo'), defs=sym?.parentNode;
   if(!sym)return Promise.resolve(null);
@@ -2305,9 +2308,8 @@ async function recapImage(){
   const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
   const F=CANVAS_FONT;
   x.fillStyle='#0c0f14';x.fillRect(0,0,W,H);
-  const logo=await logoImage(); if(logo)x.drawImage(logo,72,70,66,86);
-  x.textAlign='left';x.font=`italic 900 58px ${F}`;x.fillStyle='#f5f6f7';x.fillText('FOOT',154,134);
-  const w=x.measureText('FOOT').width;x.fillStyle='#22c55e';x.fillText('ZONE',154+w,134);
+  await stencilFont(); const logo=await logoImage(); if(logo)x.drawImage(logo,72,70,66,86);
+  x.textAlign='left';x.font=`58px 'Saira Stencil One',${F}`;x.fillStyle='#f5f6f7';x.fillText('FOOTZONE',154,134);
   x.fillStyle='#f5f6f7';x.font=`700 46px ${F}`;
   x.fillText(fitText(x,terrain.nom||'Match',W-144),72,256);
   x.fillStyle='#a8adb4';x.font=`500 32px ${F}`;
@@ -2434,7 +2436,7 @@ function subscribeNotifs(){
   state.notifChannel=sb.channel('mes-notifs').on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+uid()},p=>{
     const n=p.new; state.notifs.unshift(n); updateBells(); toast(n.titre);
     if(document.hidden&&lsGet('fz_push')!=='oui'&&lsGet('fz_notif_nav')==='oui'&&'Notification' in window&&Notification.permission==='granted'){
-      const show=r=>r?r.showNotification(n.titre,{body:n.corps||'',icon:'icon-192-v3.png',badge:'favicon-32-v3.png',tag:'fz-'+n.id}):new Notification(n.titre,{body:n.corps||'',icon:'icon-192-v3.png'});
+      const show=r=>r?r.showNotification(n.titre,{body:n.corps||'',icon:'icon-192-v4.png',badge:'favicon-32-v4.png',tag:'fz-'+n.id}):new Notification(n.titre,{body:n.corps||'',icon:'icon-192-v4.png'});
       (navigator.serviceWorker?.getRegistration?.()||Promise.resolve(null)).then(show).catch(()=>{});
     }
   }).subscribe();
@@ -2917,7 +2919,7 @@ function layoutBrandbars(){
     bar.innerHTML=''; bar.classList.add('zone-bar'); bar.style.justifyContent='';
     const L=document.createElement('div'); L.className='bb-side bb-left'; if(refresh)L.appendChild(refresh);
     const C=document.createElement('div'); C.className='zone-title';
-    C.innerHTML=`<svg class="brand-mark" viewBox="0 0 200 260" aria-hidden="true"><use href="#fzLogo"></use></svg><h1>${zoneWord(a,b)}</h1>`;
+    C.innerHTML=`<svg class="brand-mark" viewBox="0 0 200 260" aria-hidden="true"><use href="#fzLogoS"></use></svg><h1>${zoneWord(a,b)}</h1>`;
     const R=document.createElement('div'); R.className='bb-side bb-right'; if(extra)R.appendChild(extra);
     bar.append(L,C,R);
     if(maj){maj.classList.add('bb-sub');bar.after(maj);}
@@ -6678,7 +6680,7 @@ function installBrandMarks(){
     const h1=bar.querySelector('h1'); if(!h1)return;
     const emoji=h1.parentNode.querySelector(':scope > .logo'); if(emoji)emoji.remove();
     const group=document.createElement('div'); group.style.cssText='display:flex;align-items:center;gap:8px;';
-    group.innerHTML='<svg class="brand-mark" viewBox="0 0 200 260" aria-hidden="true"><use href="#fzLogo"></use></svg>';
+    group.innerHTML='<svg class="brand-mark" viewBox="0 0 200 260" aria-hidden="true"><use href="#fzLogoS"></use></svg>';
     h1.parentNode.insertBefore(group,h1); group.appendChild(h1);
   });
 }
@@ -7270,7 +7272,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v44';
+const APP_VERSION='v45';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
@@ -7345,10 +7347,10 @@ async function openQrPoster(tid){
   const W=1240,H=1754,c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
   const F=CANVAS_FONT;
   x.fillStyle='#ffffff'; x.fillRect(0,0,W,H);
-  const logo=await logoImage();
-  x.font=`italic 900 66px ${F}`; const a=x.measureText('FOOT').width, b=x.measureText('ZONE').width, lw=logo?72:0, gp=logo?18:0, sx=(W-(lw+gp+a+b))/2;
+  await stencilFont(); const logo=await logoImage();
+  x.font=`66px 'Saira Stencil One',${F}`; const a=x.measureText('FOOTZONE').width, b=0, lw=logo?72:0, gp=logo?18:0, sx=(W-(lw+gp+a+b))/2;
   if(logo)x.drawImage(logo,sx,92,72,94);
-  x.textAlign='left'; x.fillStyle='#0c0f14'; x.fillText('FOOT',sx+lw+gp,162); x.fillStyle='#16a34a'; x.fillText('ZONE',sx+lw+gp+a,162);
+  x.textAlign='left'; x.fillStyle='#0c0f14'; x.fillText('FOOTZONE',sx+lw+gp,162);
   x.textAlign='center'; x.fillStyle='#0c0f14'; x.font=`800 124px ${F}`; x.fillText('Qui joue ici ?',W/2,352);
   x.fillStyle='#4b5563'; x.font=`600 52px ${F}`; x.fillText(fitText(x,t.nom,W-200),W/2,432);
   const n=qr.getModuleCount(), S=760, cell=Math.floor(S/(n+8)), q=cell*(n+8), qx=(W-q)/2, qy=500;
