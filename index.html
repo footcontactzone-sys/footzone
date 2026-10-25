@@ -1421,6 +1421,11 @@ html.coach-on #consentBar,html.coach-on #installNudge,html.coach-on #momentAd,ht
 /* v52 : écran de connexion — rien ne s'écrase quand le clavier réduit l'écran (message d'erreur coupé) */
 #authScreen{justify-content:safe center!important;}
 #authScreen>*{flex-shrink:0;}
+/* v53 : compte privé */
+.prive-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:22px 16px;}
+.prive-card .ic{font-size:28px;color:var(--text-dim);}
+.prive-card span{font-size:13px;color:var(--text-dim);line-height:1.45;}
+.u-stats button[disabled]{opacity:1;cursor:default;}
 </style>
 </head>
 <body>
@@ -1812,7 +1817,7 @@ function openPrivacy(){
       <div class="card" style="padding:12px;"><b style="color:var(--text);">Cookies</b><br>FootZone n'utilise pas de cookies publicitaires. Les vidéos TikTok, Instagram, X et YouTube ne se chargent que si tu touches « Afficher la vidéo » : ces sites peuvent alors déposer leurs propres cookies.</div>
       <div class="card" style="padding:12px;"><b style="color:var(--text);">Tes droits</b><br>Tu peux consulter, corriger ou supprimer tes données à tout moment.${CONTACT_EMAIL?` Contact : <a style="color:var(--accent);" href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>.`:''}
         ${uid()?`<button class="pill" style="width:100%;justify-content:center;margin-top:10px;color:var(--red);" onclick="deleteAccount()">Supprimer mon compte et mes données</button>`:''}</div>
-      <div class="card" style="padding:12px;"><b style="color:var(--text);">Ce que voient les autres joueurs</b><br>Ton pseudo, ta photo, ta ville, ton poste, tes points, ton pourcentage de confiance et ta fiabilité. Jamais ton email, ton âge ni tes réglages.</div>
+      <div class="card" style="padding:12px;"><b style="color:var(--text);">Ce que voient les autres joueurs</b><br>Ton pseudo, ta photo, ta ville, ton poste, tes points, ton pourcentage de confiance et ta fiabilité. Jamais ton email, ton âge ni tes réglages. Avec un <b style="color:var(--text);">compte privé</b> (Paramètres), tes posts et tes stories ne sont visibles que par tes abonnés acceptés.</div>
       <div style="font-size:11.5px;color:var(--text-faint);">Données des terrains : © contributeurs OpenStreetMap (ODbL), ministère des Sports (Licence Ouverte 2.0), API Géo de l'État. Photos libres : Wikimedia Commons. <span style="color:var(--accent);cursor:pointer;" onclick="openLegal('mentions')">Mentions légales</span></div>
     </div>`);
 }
@@ -2422,7 +2427,7 @@ async function loadBadges(played,B,P){
    NOTIFICATIONS
    ========================================================= */
 state.notifs=[]; state.notifChannel=null;
-const NOTIF_IC={nouveau_match:'ball',rejoint:'users',complet:'check',resultat:'chart',bravo:'thumb',conteste:'alert',arbitrage:'shield',moderation:'shield',rappel:'clock',saisir:'edit',abonne:'users',pourboire:'ball'};
+const NOTIF_IC={nouveau_match:'ball',rejoint:'users',complet:'check',resultat:'chart',bravo:'thumb',conteste:'alert',arbitrage:'shield',moderation:'shield',rappel:'clock',saisir:'edit',abonne:'users',pourboire:'ball',demande:'lock',accepte:'check'};
 function notifBell(id){return `<button class="notif-btn" id="${id}" aria-label="Notifications" onclick="openNotifs()"><i class="ic ic-bell"></i><span class="notif-count" hidden></span></button>`;}
 function updateBells(){
   const n=state.notifs.filter(x=>!x.lu).length, guest=!uid();
@@ -2464,6 +2469,8 @@ async function openNotifs(){
 }
 async function notifGo(id){
   const n=state.notifs.find(x=>x.id===id); if(!n)return; closeSheets();
+  if(n.type==='demande')return openFollowRequests();
+  if((n.type==='abonne'||n.type==='accepte')&&n.de_user){await loadFollowing();return openUser(n.de_user);}
   if(n.match_id){
     const {data:m}=await sb.from('matchs').select('id,terrain_id,statut').eq('id',n.match_id).maybeSingle();
     if(m){showTab('carte');await goTerrain(m.terrain_id);setTimeout(()=>(m.statut==='joue'||m.statut==='conteste')?openRecap(m.id):renderTerrainSheet('matchs'),300);return;}
@@ -2759,6 +2766,7 @@ const KB=[
   {k:['localisation','position','gps','ou je suis','me localiser'],a:'Touche le bouton <b><i class="ic ic-pin"></i></b> à droite de la carte. Si rien ne se passe, autorise la localisation pour ce site dans les réglages de ton navigateur. Ta position n\'est jamais enregistrée.'},
   {k:['ne charge pas','lent','bug','erreur','marche pas','bloque','probleme','plante'],a:'Essaie d\'abord d\'actualiser avec le bouton <b><i class="ic ic-refresh"></i></b> ou en tirant l\'écran vers le bas. Si ça continue, décris le problème à l\'équipe.',act:[['Signaler un problème','openSupport()']]},
   {k:['installer','application','ecran d accueil','telecharger','iphone','ipad'],a:'Sur iPhone : bouton <b>Partager</b> → « Sur l\'écran d\'accueil ». Sur Android ou ordinateur : menu <b>⋮</b> → « Installer l\'application ». FootZone s\'ouvre alors en plein écran.',act:[['<i class="ic ic-phone"></i> Installer','installApp()']]},
+  {k:['prive','compte prive','cacher','masquer','demande','abonnement'],a:'Paramètres → <b>Compte privé</b> : seuls tes abonnés acceptés voient tes posts et tes stories. Les demandes arrivent dans tes notifications et dans Paramètres → <b>Demandes d\'abonnement</b>.'},
   {k:['donnees','confidentialite','rgpd','supprimer','vie privee'],a:'Tout est expliqué dans Paramètres → <b>Confidentialité et données</b>. Tu peux y désactiver la mesure d\'audience anonyme et supprimer ton compte.',act:[['Ouvrir','openPrivacy()']]},
   {k:['signaler','harcelement','insulte','arnaque','contenu'],a:'Sous chaque post, touche <b><i class="ic ic-flag"></i></b> pour le signaler. L\'équipe le vérifie rapidement.'},
   {k:['club','ol','licencie'],a:'Les terrains de club sont réservés à leurs licenciés : FootZone n\'y propose pas de matchs, mais tu peux y laisser des avis et des photos.'},
@@ -3372,34 +3380,52 @@ async function openPostSheet(id){
 /* =========================================================
    PROFIL D'UN JOUEUR + ABONNEMENTS
    ========================================================= */
-state.following=new Set();
+state.following=new Set(); state.requested=new Set();
 async function loadFollowing(){
   if(!uid())return;
-  const {data}=await sb.from('follows').select('followed').eq('follower',uid());
-  state.following=new Set((data||[]).map(x=>x.followed));
+  let {data,error}=await sb.from('follows').select('followed,accepte').eq('follower',uid());
+  if(error)({data}=await sb.from('follows').select('followed').eq('follower',uid()));
+  state.following=new Set((data||[]).filter(x=>x.accepte!==false).map(x=>x.followed));
+  state.requested=new Set((data||[]).filter(x=>x.accepte===false).map(x=>x.followed));
+}
+// compte privé : seuls les abonnements acceptés comptent (repli si la colonne n'existe pas encore)
+async function followCount(col,id){
+  let r=await sb.from('follows').select(col==='followed'?'follower':'followed',{count:'exact',head:true}).eq(col,id).eq('accepte',true);
+  if(r.error)r=await sb.from('follows').select(col==='followed'?'follower':'followed',{count:'exact',head:true}).eq(col,id);
+  return r.count||0;
 }
 async function followCounts(id){
-  const [a,b]=await Promise.all([
-    sb.from('follows').select('follower',{count:'exact',head:true}).eq('followed',id),
-    sb.from('follows').select('followed',{count:'exact',head:true}).eq('follower',id)]);
-  return {abonnes:a.count||0,abonnements:b.count||0};
+  const [a,b]=await Promise.all([followCount('followed',id),followCount('follower',id)]);
+  return {abonnes:a,abonnements:b};
 }
+async function pendingRequests(){
+  if(!uid())return [];
+  const {data,error}=await sb.from('follows').select('follower,created_at,profiles!follows_follower_fkey(id,pseudo,handle,avatar_url,ville,is_bot)').eq('followed',uid()).eq('accepte',false).order('created_at',{ascending:false}).limit(300);
+  return error?[]:(data||[]).map(r=>r.profiles).filter(Boolean);
+}
+const followLabel=id=>state.following.has(id)?'Abonné':state.requested.has(id)?'Demandé':'Suivre';
 async function toggleFollow(id,btn){
   if(!needAuth('Crée un compte pour suivre des joueurs'))return;
-  const on=state.following.has(id);
-  const r=on?await sb.from('follows').delete().match({follower:uid(),followed:id}):await sb.from('follows').insert({follower:uid(),followed:id});
+  const on=state.following.has(id)||state.requested.has(id);
+  const r=on?await sb.from('follows').delete().match({follower:uid(),followed:id}):await sb.from('follows').insert({follower:uid(),followed:id}).select().maybeSingle();
   if(r.error)return fail(r.error,'abonnement');
-  on?state.following.delete(id):state.following.add(id); if(!on)buzz();
-  $all(`[data-follow="${id}"]`).forEach(b=>{b.classList.toggle('on',!on);b.innerHTML=!on?'Abonné':'Suivre';});
+  state.following.delete(id); state.requested.delete(id);
+  if(!on){(r.data&&r.data.accepte===false?state.requested:state.following).add(id);buzz();if(state.requested.has(id))toast('Demande envoyée : ce compte est privé');}
+  $all(`[data-follow="${id}"]`).forEach(b=>{b.classList.toggle('on',!!(state.following.has(id)||state.requested.has(id)));b.innerHTML=followLabel(id);});
   if(state.viewUser===id){const c=await followCounts(id);const e=$('#uAbonnes');if(e)e.textContent=c.abonnes;}
   if(id!==uid()&&state.tab==='profil')loadMyFollowCounts();
 }
-const followBtn=(id,cls='')=>id===uid()?'':`<button class="pill follow-btn ${cls} ${state.following.has(id)?'on':''}" data-follow="${id}" onclick="event.stopPropagation();toggleFollow('${id}',this)">${state.following.has(id)?'Abonné':'Suivre'}</button>`;
+const followBtn=(id,cls='')=>id===uid()?'':`<button class="pill follow-btn ${cls} ${state.following.has(id)||state.requested.has(id)?'on':''}" data-follow="${id}" onclick="event.stopPropagation();toggleFollow('${id}',this)">${followLabel(id)}</button>`;
+const PROFIL_COLS='id,pseudo,handle,avatar_url,banner_url,bio,ville,departement,poste,points,buts,passes,is_bot,pts_verifies,confiance,fiabilite,nb_matchs';
+async function profilPublic(id){
+  const r=await sb.from('profiles').select(PROFIL_COLS+',prive').eq('id',id).maybeSingle();
+  return r.error?await sb.from('profiles').select(PROFIL_COLS).eq('id',id).maybeSingle():r;
+}
 async function openUser(id){
   if(!id)return;
   if(id===uid()&&state.tab!=='profil'){closeSheets();return showTab('profil');}
   const [{data:p},counts,posts,st]=await Promise.all([
-    sb.from('profiles').select('id,pseudo,handle,avatar_url,banner_url,bio,ville,departement,poste,points,buts,passes,is_bot,pts_verifies,confiance,fiabilite,nb_matchs').eq('id',id).maybeSingle(),
+    profilPublic(id),
     followCounts(id),
     sb.from('posts_feed').select('*').eq('author_id',id).order('created_at',{ascending:false}).limit(100),
     sb.from('stories_feed').select('id').eq('author_id',id).limit(1),
@@ -3407,6 +3433,7 @@ async function openUser(id){
   if(!p)return toast('Joueur introuvable');
   state.viewUser=id; state.userPosts=isBlocked(id)?[]:(posts.data||[]); state.userPostsQuery='';
   const hasStory=(st.data||[]).length>0;
+  const verrou=!!p.prive&&id!==uid()&&!state.following.has(id)&&!state.profile?.is_admin;
   openSheet('sheetSettings',`<div class="sheet-handle"></div>
     <div class="section-pad" style="display:flex;justify-content:flex-end;">${closeBtn}</div>
     <div class="sheet-body" style="margin-top:-30px;">
@@ -3416,30 +3443,32 @@ async function openUser(id){
         <div style="display:flex;gap:6px;margin-bottom:6px;">${id!==uid()?(isBlocked(id)?`<button class="pill" onclick="userMenu('${id}',${JSON.stringify(p.pseudo||'').replace(/"/g,'&quot;')})"><i class="ic ic-ban"></i> Bloqué</button>`:`${followBtn(id)}<button class="pill" onclick="startDM('${id}')"><i class="ic ic-mail"></i> Message</button>`)+`<button class="pill" aria-label="Plus d'options" onclick="userMenu('${id}',${JSON.stringify(p.pseudo||'').replace(/"/g,'&quot;')})"><i class="ic ic-more"></i></button>`:''}</div>
       </div>
       <div class="section-pad" style="margin-top:8px;">
-        <div style="font-size:19px;font-weight:800;">${esc(p.pseudo)}${botTag(p.is_bot)}</div>
+        <div style="font-size:19px;font-weight:800;">${esc(p.pseudo)}${botTag(p.is_bot)}${p.prive?' <i class="ic ic-lock" style="font-size:15px;color:var(--text-faint);" title="Compte privé"></i>':''}</div>
         <div style="color:var(--text-faint);font-size:13.5px;">@${esc(p.handle)}${p.ville?' · '+esc(p.ville):''}${p.poste?' · '+esc(p.poste):''}</div>
         ${p.bio?`<div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap;">${esc(p.bio)}</div>`:''}
         ${p.is_bot?'<div class="card" style="padding:10px 12px;margin-top:10px;font-size:12.5px;color:var(--text-dim);"><i class="ic ic-spark"></i> Ce compte est un bot de FootZone : il publie automatiquement pour animer l\'appli. Ce n\'est pas une vraie personne.</div>':''}
         <div class="u-stats">
-          <button onclick="openFollowList('${id}','abonnes')"><b id="uAbonnes">${counts.abonnes}</b><span>Abonnés</span></button>
-          <button onclick="openFollowList('${id}','abonnements')"><b>${counts.abonnements}</b><span>Abonnements</span></button>
+          <button ${verrou?'disabled':`onclick="openFollowList('${id}','abonnes')"`}><b id="uAbonnes">${counts.abonnes}</b><span>Abonnés</span></button>
+          <button ${verrou?'disabled':`onclick="openFollowList('${id}','abonnements')"`}><b>${counts.abonnements}</b><span>Abonnements</span></button>
           <button onclick="openPointsInfo()"><b>${fmtPts(p.points)}</b><span>Points ${p.confiance!=null?confBadge(p.confiance):''}</span></button><div><b>${p.buts}</b><span>Buts</span></div><div><b>${p.passes||0}</b><span>Passes</span></div>
         </div>
         ${p.is_bot?'':`<div class="u-fiab" onclick="openPointsInfo()">${fmtPts(p.pts_verifies)} pts vérifiés · fiabilité <b style="color:${confColor(p.fiabilite)}">${pct(p.fiabilite)} %</b> · ${p.nb_matchs||0} match${(p.nb_matchs||0)>1?'s':''}</div>`}
       </div>
-      <div class="section-pad" style="margin-top:14px;">
+      ${verrou?`<div class="section-pad" style="margin-top:14px;"><div class="card prive-card"><i class="ic ic-lock"></i><b>Ce compte est privé</b><span>${state.requested.has(id)?'Ta demande est envoyée. Tu verras ses posts et ses stories quand il l\'aura acceptée.':'Abonne-toi pour voir ses posts et ses stories.'}</span></div></div>`:`<div class="section-pad" style="margin-top:14px;">
         <div class="searchbar"><span><i class="ic ic-search"></i></span><input id="uPostSearch" placeholder="Chercher dans ses posts…" autocomplete="off" style="flex:1;font-size:14px;"></div>
         <div id="uPosts" style="margin-top:10px;display:flex;flex-direction:column;gap:8px;"></div>
-      </div>
+      </div>`}
     </div>`);
+  if(verrou)return;
   const draw=()=>{const q=state.userPostsQuery;$('#uPosts').innerHTML=state.userPosts.filter(x=>!q||x.texte.toLowerCase().includes(q)).map(x=>postMini(x,q)).join('')||`<div style="color:var(--text-faint);font-size:13px;">${q?'Aucun post ne correspond.':'Aucun post pour l\'instant.'}</div>`;};
   $('#uPostSearch').addEventListener('input',debounce(e=>{state.userPostsQuery=e.target.value.trim().toLowerCase();draw();},150));
   draw();
 }
 async function openFollowList(id,kind){
   const col=kind==='abonnes'?'follower':'followed', by=kind==='abonnes'?'followed':'follower';
-  const {data}=await sb.from('follows').select(`${col},profiles!follows_${col}_fkey(id,pseudo,handle,avatar_url,ville,is_bot)`).eq(by,id).order('created_at',{ascending:false}).limit(1000);
-  state.followList=(data||[]).map(r=>r.profiles).filter(Boolean);
+  let {data,error}=await sb.from('follows').select(`${col},accepte,profiles!follows_${col}_fkey(id,pseudo,handle,avatar_url,ville,is_bot)`).eq(by,id).order('created_at',{ascending:false}).limit(1000);
+  if(error)({data}=await sb.from('follows').select(`${col},profiles!follows_${col}_fkey(id,pseudo,handle,avatar_url,ville,is_bot)`).eq(by,id).order('created_at',{ascending:false}).limit(1000));
+  state.followList=(data||[]).filter(r=>r.accepte!==false).map(r=>r.profiles).filter(Boolean);
   openSheet('sheetShare',`<div class="sheet-handle"></div>
     <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:800;font-size:16px;">${kind==='abonnes'?'Abonnés':'Abonnements'} · ${state.followList.length}</div>${closeBtn}</div>
     <div class="section-pad" style="margin-top:8px;"><div class="searchbar"><span><i class="ic ic-search"></i></span><input id="flSearch" placeholder="Chercher un joueur…" autocomplete="off" style="flex:1;font-size:14px;"></div></div>
@@ -6517,6 +6546,9 @@ $('#btnSettings').addEventListener('click',()=>{
       <div class="ios-group">
         <button class="ios-row" onclick="openNotifSettings()"><i class="ic ic-bell"></i><span>Notifications</span><i class="ic ic-chevron chev"></i></button>
         <button class="ios-row" onclick="openPrivacy()"><i class="ic ic-lock"></i><span>Confidentialité et données</span><i class="ic ic-chevron chev"></i></button>
+        <button class="ios-row" role="switch" aria-checked="${!!state.profile?.prive}" onclick="setPrive(${!state.profile?.prive})"><i class="ic ic-lock"></i><span>Compte privé</span><span class="tgl ${state.profile?.prive?'on':''}"></span></button>
+        <div class="ios-note" style="padding:2px 16px 8px;">${state.profile?.prive?'Seuls tes abonnés acceptés voient tes posts et tes stories. Ton pseudo, ta photo et tes points restent visibles dans les classements et les matchs.':'Tout le monde peut voir tes posts et tes stories.'}</div>
+        <button class="ios-row" onclick="openFollowRequests()"><i class="ic ic-users"></i><span>Demandes d'abonnement</span><i class="ic ic-chevron chev"></i></button>
         <button class="ios-row" onclick="openBlockedList()"><i class="ic ic-ban"></i><span>Comptes bloqués</span><i class="ic ic-chevron chev"></i></button>
         <button class="ios-row" onclick="installApp()"><i class="ic ic-phone"></i><span>Comment installer l'application</span><i class="ic ic-chevron chev"></i></button>
       </div>
@@ -7143,6 +7175,31 @@ function userMenu(id,pseudo){
       <div class="card menu-row" style="color:var(--red);" onclick="toggleBlock('${id}',${P})"><i class="ic ic-ban"></i><span>${blocked?'Débloquer':'Bloquer'}</span></div>
     </div>`);
 }
+async function openFollowRequests(){
+  if(!needAuth())return;
+  const L=await pendingRequests(); state.reqCount=L.length; updateBells&&updateBells();
+  openSheet('sheetSettings',`<div class="sheet-handle"></div>
+    <div class="section-pad" style="display:flex;justify-content:space-between;align-items:center;"><div style="font-weight:800;font-size:16px;"><i class="ic ic-users"></i> Demandes d'abonnement${L.length?' · '+L.length:''}</div>${closeBtn}</div>
+    <div class="sheet-body section-pad" style="display:flex;flex-direction:column;gap:6px;margin-top:10px;">
+      ${L.map(p=>`<div class="card fl-row" id="req-${p.id}"><span onclick="openUser('${p.id}')" style="display:contents;cursor:pointer;">${avatarHtml(p.avatar_url,'sm')}<div style="flex:1;min-width:0;"><b>${esc(p.pseudo)}${botTag(p.is_bot)}</b><div style="font-size:12px;color:var(--text-faint);">@${esc(p.handle)}${p.ville?' · '+esc(p.ville):''}</div></div></span>
+        <button class="pill" style="font-size:12px;${greenBtn}" onclick="answerRequest('${p.id}',true)">Accepter</button><button class="pill" style="font-size:12px;" onclick="answerRequest('${p.id}',false)">Refuser</button></div>`).join('')
+        ||`<div style="color:var(--text-faint);font-size:13.5px;">Aucune demande en attente.${state.profile?.prive?'':' Les demandes arrivent quand ton compte est privé.'}</div>`}
+    </div>`);
+}
+async function answerRequest(id,ok){
+  const q=sb.from('follows'); const r=ok?await q.update({accepte:true}).match({follower:id,followed:uid()}):await q.delete().match({follower:id,followed:uid()});
+  if(r.error)return fail(r.error,'demande d\'abonnement');
+  $(`#req-${id}`)?.remove(); toast(ok?'Demande acceptée':'Demande refusée'); if(ok)buzz();
+  if(!$('#sheetSettings [id^="req-"]'))openFollowRequests();
+  loadMyFollowCounts();
+}
+async function setPrive(v){
+  const {error}=await sb.from('profiles').update({prive:v}).eq('id',uid());
+  if(error)return fail(error,'compte privé');
+  state.profile.prive=v; buzz();
+  toast(v?'Compte privé : seuls tes abonnés voient tes posts et tes stories':'Compte public : tout le monde voit tes posts');
+  $('#btnSettings').click();
+}
 async function openBlockedList(){
   const {data}=await sb.from('blocages').select('bloque_id,profiles!blocages_bloque_id_fkey(id,pseudo,handle,avatar_url)').order('created_at',{ascending:false});
   const L=(data||[]).map(r=>r.profiles).filter(Boolean);
@@ -7275,7 +7332,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v52';
+const APP_VERSION='v53';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
