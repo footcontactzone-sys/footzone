@@ -1418,6 +1418,9 @@ html.coach-on #consentBar,html.coach-on #installNudge,html.coach-on #momentAd,ht
 .fz-word,#mapLogo h1,.ia-word{font-family:'Saira Stencil One',Barlow,sans-serif!important;font-weight:400!important;font-style:normal!important;letter-spacing:1px!important;}
 .fz-word span{color:#22c55e;}
 .zone-title .brand-mark,#mapLogo .brand-mark{width:22px;height:29px;}
+/* v52 : écran de connexion — rien ne s'écrase quand le clavier réduit l'écran (message d'erreur coupé) */
+#authScreen{justify-content:safe center!important;}
+#authScreen>*{flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -7272,7 +7275,7 @@ function openLegalMenu(){
 }
 
 /* ---------- Journal des erreurs : on remonte les bugs des vrais joueurs ---------- */
-const APP_VERSION='v51';
+const APP_VERSION='v52';
 (function initErrorLog(){
   let sent=0; const seen=new Set();
   const send=(message,source)=>{
